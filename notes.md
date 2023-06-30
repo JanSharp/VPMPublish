@@ -1,0 +1,45 @@
+
+# Workflow
+
+- validation
+  - validate project structure
+    - `package.json` exists, is valid json a nd name matches folder name
+    - `CHANGELOG.md` exists
+  - validate and extract `"version"` number
+  - validate both `"url"` and `"changelogUrl"`, for example:
+    - "url": "https://github.com/JanSharp/VCCDummyPackage/releases/download/v0.1.0/com.jansharp.dummy.zip",
+    - "changelogUrl": "https://github.com/JanSharp/VCCDummyPackage/blob/v0.1.0/CHANGELOG.md",
+    - abort if they are invalid or if the version number doesn't match
+  - validate changelog's top block's version number matches, abort if it doesn't
+- preparation commit
+  - update date in changelog
+  - commit
+- package
+  - create zip file, in tmp
+    - include everything except `.git`
+    - think about also ignoring files ignored by `.gitignore` but I don't think it should.
+    - calculate sha256 checksum of the zip
+  - generate release notes
+    - extract top block from the changelog file
+      - include the # changelog header
+      - include the whole version block, but not the previous one
+      - strip the `[]` from the `[x.x.x]` version at the top, making it not a link
+    - append the sha256 checksum at the bottom of the release notes
+- create annotated git tag for this version
+  - use the form `vx.x.x`
+  - include the sha256 checksum in the annotation for the tag in a machine readable way
+- push both the preparation commit and the tag
+- create github release
+  - attach the zip file
+  - use the generated release notes
+  - use the freshly created git tag
+  - set title to `vx.x.x`
+- increment the version
+  - update version in `package.json`
+    - `"version"`
+    - `"url"`
+    - `"changelogURL"`
+  - update version in `CHANGELOG.md`
+    - create a new and empty version block
+    - add link at the bottom of the file
+  - git commit
