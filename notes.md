@@ -3,7 +3,7 @@
 
 - validation
   - validate project structure
-    - `package.json` exists, is valid json a nd name matches folder name
+    - `package.json` exists, is valid json and name matches folder name
     - `CHANGELOG.md` exists
   - validate and extract `"version"` number
   - validate both `"url"` and `"changelogUrl"`, for example:

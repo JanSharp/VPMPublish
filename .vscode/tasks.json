@@ -9,9 +9,9 @@
         "build",
         "${workspaceFolder}/VPMPublish.csproj",
         "/property:GenerateFullPaths=true",
-        "/consoleloggerparameters:NoSummary"
+        "/consoleloggerparameters:NoSummary",
       ],
-      "problemMatcher": "$msCompile"
+      "problemMatcher": "$msCompile",
     },
     {
       "label": "publish",
@@ -21,9 +21,9 @@
         "publish",
         "${workspaceFolder}/VPMPublish.csproj",
         "/property:GenerateFullPaths=true",
-        "/consoleloggerparameters:NoSummary"
+        "/consoleloggerparameters:NoSummary",
       ],
-      "problemMatcher": "$msCompile"
+      "problemMatcher": "$msCompile",
     },
     {
       "label": "watch",
@@ -33,9 +33,9 @@
         "watch",
         "run",
         "--project",
-        "${workspaceFolder}/VPMPublish.csproj"
+        "${workspaceFolder}/VPMPublish.csproj",
       ],
-      "problemMatcher": "$msCompile"
-    }
-  ]
+      "problemMatcher": "$msCompile",
+    },
+  ],
 }
