@@ -1,5 +1,4 @@
 ﻿using System.CommandLine;
-using System.Text.Json;
 
 namespace VPMPublish
 {
@@ -25,8 +24,8 @@ namespace VPMPublish
 
         private static void Publish(string packageRoot)
         {
-            string fileContent = File.ReadAllText(Path.Combine(packageRoot, "package.json"));
-            PackageJson? packageJson = JsonSerializer.Deserialize<PackageJson>(fileContent);
+            var context = new ExecutionState();
+            context.Publish(packageRoot);
         }
     }
 }
