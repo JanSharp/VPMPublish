@@ -1,24 +1,32 @@
-﻿using System.Text.Json;
+﻿using System.CommandLine;
+using System.Text.Json;
 
 namespace VPMPublish
 {
     public class Program
     {
-        public static async Task Main(string[] args)
+        private static async Task<int> Main(string[] args)
         {
-            // JsonSerializerOptions options = new JsonSerializerOptions();
-            string fileContent = File.ReadAllText(args[0]);
+            var rootCommand = new RootCommand(
+                "Utility to publish VRChat Package Manager (VPM) packages to GitHub.");
+
+            var arg = new Argument<string>(
+                "package-root",
+                Directory.GetCurrentDirectory,
+                "The path to the root of the package which resides in the Packages folder in Unity. "
+                    + "When omitted uses the current working directory."
+            );
+            rootCommand.Add(arg);
+
+            rootCommand.SetHandler(Publish, arg);
+
+            return await rootCommand.InvokeAsync(args);
+        }
+
+        private static void Publish(string packageRoot)
+        {
+            string fileContent = File.ReadAllText(Path.Combine(packageRoot, "package.json"));
             PackageJson? packageJson = JsonSerializer.Deserialize<PackageJson>(fileContent);
-            if (packageJson == null)
-                return;
-
-            // if (packageJson.TheRest != null)
-            //     foreach (var kvp in packageJson.TheRest)
-            //         Console.WriteLine($"{kvp.Key}: {kvp.Value.ValueKind}, {kvp.Value.ToString()}");
-
-            // Console.WriteLine(packageJson.HideInEditor.HasValue);
-
-            await Task.Delay(0); // Stop complaining!
         }
     }
 }
