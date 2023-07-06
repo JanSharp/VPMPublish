@@ -12,6 +12,8 @@
       // If you have changed target frameworks, make sure to update the program path.
       "program": "${workspaceFolder}/bin/Debug/net7.0/VPMPublish.dll",
       "args": [
+        "publish",
+        "--package-root",
         "/mnt/big/dev/unity/DummyCustomVPMPackage/Packages/com.jansharp.dummy",
       ],
       "cwd": "${workspaceFolder}",

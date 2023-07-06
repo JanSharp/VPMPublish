@@ -11,15 +11,17 @@ namespace VPMPublish
             var rootCommand = new RootCommand(
                 "Utility to publish VRChat Package Manager (VPM) packages to GitHub.");
 
-            var arg = new Argument<string>(
-                "package-root",
+            var packageRootOption = new Option<string>(
+                "--package-root",
                 Directory.GetCurrentDirectory,
                 "The path to the root of the package which resides in the Packages folder in Unity. "
                     + "When omitted uses the current working directory."
             );
-            rootCommand.Add(arg);
 
-            rootCommand.SetHandler(Publish, arg);
+            var publishCommand = new Command("publish", "Publish a package to GitHub.");
+            rootCommand.AddCommand(publishCommand);
+            publishCommand.Add(packageRootOption);
+            publishCommand.SetHandler(Publish, packageRootOption);
 
             int libExitCode = await rootCommand.InvokeAsync(args);
             return libExitCode != 0 ? libExitCode : exitCode;
