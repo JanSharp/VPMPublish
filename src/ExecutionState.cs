@@ -1,3 +1,5 @@
+using System.IO.Compression;
+using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Semver;
@@ -16,6 +18,9 @@ namespace VPMPublish
         ///Excludes the `## [x.x.x] - YYYY-MM-DD` line.
         ///</summary>
         private string? changelogEntry;
+        private string? tempDirName;
+        private string? packageFileName;
+        private ZipArchive? packageArchive;
 
         public ExecutionState(string packageRoot)
         {
@@ -53,10 +58,15 @@ namespace VPMPublish
                 ValidatePackageJson();
                 LoadChangelog();
                 ValidateChangelog();
+                PrepareForPackage();
+                AddAllFilesToTheZipPackage();
+                // Done.
+                CleanupPackage();
                 await Task.Delay(0); // HACK: To make it stop complaining about async.v
             }
             catch (Exception e)
             {
+                CleanupPackage();
                 if (!didAbort)
                     throw;
                 Console.Error.WriteLine(e.Message);
@@ -229,6 +239,58 @@ namespace VPMPublish
                 );
 
             changelogEntry = entryMatch.Groups["entry"].Value;
+        }
+
+        private void PrepareForPackage()
+        {
+            tempDirName = Directory.CreateTempSubdirectory("VPMPublish").FullName;
+            packageFileName = Path.Combine(tempDirName, packageJson!.Name + ".zip");
+            FileStream fileStream = File.Create(packageFileName);
+            packageArchive = new ZipArchive(fileStream, ZipArchiveMode.Create, false, Encoding.UTF8);
+        }
+
+        private void AddAllFilesToTheZipPackage()
+        {
+            string Combine(string left, string right) => left == "" ? right : left + "/" + right;
+
+            void Walk(DirectoryInfo currentDirectory, string currentRelativeName)
+            {
+                foreach (FileInfo fileInfo in currentDirectory.EnumerateFiles())
+                {
+                    string entryName = Combine(currentRelativeName, fileInfo.Name);
+                    packageArchive!.CreateEntryFromFile(fileInfo.FullName, entryName);
+                }
+                foreach (DirectoryInfo dirInfo in currentDirectory.EnumerateDirectories())
+                {
+                    if (dirInfo.Name == ".git")
+                        continue;
+                    Walk(dirInfo, Combine(currentRelativeName, dirInfo.Name));
+                }
+            }
+
+            Walk(new DirectoryInfo(packageRoot), "");
+            packageArchive!.Dispose(); // Dispose to close the file stream.
+        }
+
+        private void DeleteTempDir()
+        {
+            if (tempDirName != null && Directory.Exists(tempDirName))
+                Directory.Delete(tempDirName, true);
+        }
+
+        ///<summary>
+        ///Call this in a try catch block to clean up any disposable resources.
+        ///Of course also call it at the end in order to clean up after everything is done.
+        ///</summary>
+        private void CleanupPackage()
+        {
+            packageArchive?.Dispose();
+            try
+            {
+                DeleteTempDir();
+            }
+            catch {} // Don't care about failure, the cleanup function is running in a 
+            // catch block already, so if this fails it's a secondary, non important error.
         }
     }
 }
