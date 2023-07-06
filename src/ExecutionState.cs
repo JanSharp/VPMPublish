@@ -16,11 +16,17 @@ namespace VPMPublish
         private SemVersion? version;
         private string? wholeChangelog;
         ///<summary>
+        ///Since time is passing during the execution of this program,
+        ///make sure the same date is used throughout all of it.
+        ///</summary>
+        private string? currentDateStr;
+        ///<summary>
         ///Excludes the `## [x.x.x] - YYYY-MM-DD` line.
         ///</summary>
         private string? changelogEntry;
         private string? tempDirName;
         private string? packageFileName;
+        private string? releaseNotesFileName;
         private ZipArchive? packageArchive;
         private string? sha256Checksum;
 
@@ -63,6 +69,7 @@ namespace VPMPublish
                 PrepareForPackage();
                 AddAllFilesToTheZipPackage();
                 CalculateSha256Checksum();
+                GenerateReleaseNotes();
                 // Done.
                 CleanupPackage();
                 await Task.Delay(0); // HACK: To make it stop complaining about async.v
@@ -229,10 +236,10 @@ namespace VPMPublish
                     + $"which does not match the ISO-8601 format YYYY-MM-DD."
                 );
 
-            string expectedDateStr = DateTime.UtcNow.ToString("yyyy-MM-dd");
-            if (dateStr != expectedDateStr)
+            currentDateStr = DateTime.UtcNow.ToString("yyyy-MM-dd");
+            if (dateStr != currentDateStr)
                 throw Abort($"The date for the top entry in the changelog is '{dateStr}' "
-                    + $"which does not match the expected date '{expectedDateStr}'. "
+                    + $"which does not match the expected date '{currentDateStr}'. "
                     + $"Chances are that you just generated the changelog entry a few minutes ago "
                     + $"in which case this is a bit confusing, but the reason for that is the fact "
                     + $"the changelog dates are in UTC, so the change from one day to the next "
@@ -247,9 +254,13 @@ namespace VPMPublish
         private void PrepareForPackage()
         {
             tempDirName = Directory.CreateTempSubdirectory("VPMPublish").FullName;
+
             packageFileName = Path.Combine(tempDirName, packageJson!.Name + ".zip");
             FileStream fileStream = File.Create(packageFileName);
             packageArchive = new ZipArchive(fileStream, ZipArchiveMode.Create, false, Encoding.UTF8);
+
+            // This file will be created when it's actually written to.
+            releaseNotesFileName = Path.Combine(tempDirName, "release-notes.md");
         }
 
         private void AddAllFilesToTheZipPackage()
@@ -280,6 +291,23 @@ namespace VPMPublish
             using FileStream fileStream = File.OpenRead(packageFileName!);
             sha256Checksum = Convert.ToHexString(SHA256.Create().ComputeHash(fileStream)).ToLower();
             fileStream.Close();
+        }
+
+        private void GenerateReleaseNotes()
+        {
+            var file = File.CreateText(releaseNotesFileName!);
+            file.WriteLine("// TODO: Link to human readable listing page here.");
+            file.WriteLine();
+            file.WriteLine("# Changelog");
+            file.WriteLine();
+            file.WriteLine($"## {packageJson!.Version} - {currentDateStr!}");
+            file.WriteLine();
+            file.WriteLine(changelogEntry!);
+            file.WriteLine();
+            file.WriteLine("# Zip sha256 checksum");
+            file.WriteLine();
+            file.WriteLine($"`{sha256Checksum!}`");
+            file.Close();
         }
 
         private void DeleteTempDir()
