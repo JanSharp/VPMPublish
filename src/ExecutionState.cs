@@ -1,4 +1,5 @@
 using System.IO.Compression;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -21,6 +22,7 @@ namespace VPMPublish
         private string? tempDirName;
         private string? packageFileName;
         private ZipArchive? packageArchive;
+        private string? sha256Checksum;
 
         public ExecutionState(string packageRoot)
         {
@@ -60,6 +62,7 @@ namespace VPMPublish
                 ValidateChangelog();
                 PrepareForPackage();
                 AddAllFilesToTheZipPackage();
+                CalculateSha256Checksum();
                 // Done.
                 CleanupPackage();
                 await Task.Delay(0); // HACK: To make it stop complaining about async.v
@@ -270,6 +273,13 @@ namespace VPMPublish
 
             Walk(new DirectoryInfo(packageRoot), "");
             packageArchive!.Dispose(); // Dispose to close the file stream.
+        }
+
+        private void CalculateSha256Checksum()
+        {
+            using FileStream fileStream = File.OpenRead(packageFileName!);
+            sha256Checksum = Convert.ToHexString(SHA256.Create().ComputeHash(fileStream)).ToLower();
+            fileStream.Close();
         }
 
         private void DeleteTempDir()
