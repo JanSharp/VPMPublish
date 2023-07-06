@@ -2,6 +2,9 @@
 # Publish Workflow
 
 - validation
+  - ensure that the `git` and `gh` commands are available
+  - ensure that the the `main` (or `master`) branch is checked out
+  - ensure that the working tree is clean
   - validate project structure
     - `package.json` exists, is valid json and name matches folder name
     - `CHANGELOG.md` exists
