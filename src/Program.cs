@@ -2,8 +2,10 @@
 
 namespace VPMPublish
 {
-    public class Program
+    public static class Program
     {
+        private static int exitCode = 0;
+
         private static async Task<int> Main(string[] args)
         {
             var rootCommand = new RootCommand(
@@ -19,13 +21,14 @@ namespace VPMPublish
 
             rootCommand.SetHandler(Publish, arg);
 
-            return await rootCommand.InvokeAsync(args);
+            int libExitCode = await rootCommand.InvokeAsync(args);
+            return libExitCode != 0 ? libExitCode : exitCode;
         }
 
-        private static void Publish(string packageRoot)
+        private static async void Publish(string packageRoot)
         {
-            var context = new ExecutionState();
-            context.Publish(packageRoot);
+            var context = new ExecutionState(packageRoot);
+            exitCode = await context.Publish();
         }
     }
 }
