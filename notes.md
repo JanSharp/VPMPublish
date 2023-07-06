@@ -1,5 +1,5 @@
 
-# Workflow
+# Publish Workflow
 
 - validation
   - validate project structure
@@ -10,10 +10,9 @@
     - "url": "https://github.com/JanSharp/VCCDummyPackage/releases/download/v0.1.0/com.jansharp.dummy.zip",
     - "changelogUrl": "https://github.com/JanSharp/VCCDummyPackage/blob/v0.1.0/CHANGELOG.md",
     - abort if they are invalid or if the version number doesn't match
-  - validate changelog's top block's version number matches, abort if it doesn't
-- preparation commit
-  - update date in changelog
-  - commit
+  - extract changelog entry
+    - validate changelog's top block's version number matches, abort if it doesn't
+    - validate changelog date, abort if it doesn't match, telling the user what date it should have so they can update it and `git add .` and `git commit --amend --no-edit`. It'll use UTC
 - package
   - create zip file, in tmp
     - include everything except `.git`
@@ -28,7 +27,7 @@
 - create annotated git tag for this version
   - use the form `vx.x.x`
   - include the sha256 checksum in the annotation for the tag in a machine readable way
-- push both the preparation commit and the tag
+- push the tag
 - create github release
   - attach the zip file
   - use the generated release notes
@@ -39,7 +38,9 @@
     - `"version"`
     - `"url"`
     - `"changelogURL"`
-  - update version in `CHANGELOG.md`
-    - create a new and empty version block
-    - add link at the bottom of the file
-  - git commit
+
+# Changelog Util
+
+- generate draft
+  - add new entry at the top with the version from the package.json, and the current UTC date
+  - use git log to generate a changelog draft
