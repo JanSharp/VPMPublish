@@ -13,16 +13,20 @@
   - extract changelog entry
     - validate changelog's top block's version number matches, abort if it doesn't
     - validate changelog date, abort if it doesn't match, telling the user what date it should have so they can update it and `git add .` and `git commit --amend --no-edit`. It'll use UTC
+    - what to extract
+      - don't include the # changelog header
+      - don't include the ## `[x.x.x]` line
+      - include the whole version block, but not the previous one
 - package
   - create zip file, in tmp
     - include everything except `.git`
     - think about also ignoring files ignored by `.gitignore` but I don't think it should.
     - calculate sha256 checksum of the zip
   - generate release notes
-    - extract top block from the changelog file
-      - include the # changelog header
-      - include the whole version block, but not the previous one
-      - strip the `[]` from the `[x.x.x]` version at the top, making it not a link
+    - insert link to human readable listing page at the top
+    - next `# Changelog`
+    - generate the `## [x.x.x] - YYYY-MM-DD` line
+    - use the previously extracted version block from the changelog
     - append the sha256 checksum at the bottom of the release notes
 - create annotated git tag for this version
   - use the form `vx.x.x`
