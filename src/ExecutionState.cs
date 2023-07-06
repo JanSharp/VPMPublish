@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using System.Diagnostics;
 using Semver;
 
 namespace VPMPublish
@@ -11,6 +12,7 @@ namespace VPMPublish
     {
         private bool didAbort;
         private string packageRoot;
+        private ProcessStartInfo startInfo;
 
         private PackageJson? packageJson;
         private SemVersion? version;
@@ -33,6 +35,13 @@ namespace VPMPublish
         public ExecutionState(string packageRoot)
         {
             this.packageRoot = packageRoot;
+            startInfo = new ProcessStartInfo()
+            {
+                WindowStyle = ProcessWindowStyle.Hidden,
+                CreateNoWindow = true,
+                UseShellExecute = true,
+                WorkingDirectory = packageRoot,
+            };
         }
 
         // I seriously dislike these Abort and MayAbort functions,
@@ -62,6 +71,7 @@ namespace VPMPublish
         {
             try
             {
+                await EnsureCommandAvailability();
                 LoadPackageJson();
                 ValidatePackageJson();
                 LoadChangelog();
@@ -72,7 +82,6 @@ namespace VPMPublish
                 GenerateReleaseNotes();
                 // Done.
                 CleanupPackage();
-                await Task.Delay(0); // HACK: To make it stop complaining about async.v
             }
             catch (Exception e)
             {
@@ -84,6 +93,34 @@ namespace VPMPublish
                 return 1;
             }
             return 0;
+        }
+
+        private async Task EnsureCommandAvailability()
+        {
+            // Both use the same arg.
+            startInfo.ArgumentList.Clear();
+            startInfo.ArgumentList.Add("--version");
+
+            startInfo.FileName = "git";
+            Process? gitProcess = Process.Start(startInfo);
+            startInfo.FileName = "gh";
+            Process? ghProcess = Process.Start(startInfo);
+
+            if (gitProcess == null || ghProcess == null)
+                throw Abort($"This program require both git and the github cli to be installed "
+                    + $"({(gitProcess == null ? "failed to start 'git'" : "'git' may be fine")}) "
+                    + $"({(ghProcess == null ? "failed to start 'gh'" : "'gh' may be fine")})."
+                );
+
+            Task gitWaitTask = gitProcess.WaitForExitAsync();
+            Task ghWaitTask = ghProcess.WaitForExitAsync();
+            await Task.WhenAll(gitWaitTask, ghWaitTask);
+
+            if (gitProcess.ExitCode != 0 || ghProcess.ExitCode != 0)
+                throw Abort($"This program require both git and the github cli to be installed "
+                    + $"({(gitProcess.ExitCode != 0 ? $"'git' exited with exit code {gitProcess.ExitCode}" : "'git' is fine")}) "
+                    + $"({(ghProcess.ExitCode != 0 ? $"'gh' exited with exit code {ghProcess.ExitCode}" : "'gh' is fine")})."
+                );
         }
 
         private void LoadPackageJson()
