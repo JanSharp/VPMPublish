@@ -2,6 +2,7 @@ using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Diagnostics;
 using Semver;
@@ -87,6 +88,7 @@ namespace VPMPublish
                 GenerateReleaseNotes();
                 CreateGitTag();
                 CreateGitHubRelease();
+                IncrementVersionNumber();
             }
             catch (Exception e)
             {
@@ -485,6 +487,25 @@ namespace VPMPublish
                 "--title", $"v{packageJson!.Version}",
                 "--notes-file", releaseNotesFileName!
             );
+        }
+
+        private void IncrementVersionNumber()
+        {
+            SemVersion incrementedVersion = version!.WithPatch(version.Patch + 1);
+            string incVersionStr = incrementedVersion.ToString();
+            packageJson!.Url = packageJson.Url.Replace(packageJson.Version, incVersionStr);
+            packageJson.ChangelogUrl = packageJson.ChangelogUrl!.Replace(packageJson.Version, incVersionStr);
+            packageJson.Version = incVersionStr;
+
+            using FileStream fileStream = File.OpenWrite(Path.Combine(packageRoot, "package.json"));
+            JsonSerializer.Serialize(fileStream, packageJson, new JsonSerializerOptions()
+            {
+                WriteIndented = true,
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+            });
+            fileStream.Close();
+
+            RunProcess("git", "commit", "-a", "-m", $"Move to version `v{incVersionStr}`");
         }
 
         private void DeleteTempDir()
