@@ -71,6 +71,7 @@ namespace VPMPublish
             try
             {
                 EnsureCommandAvailability();
+                EnsureIsMainBranch();
                 LoadPackageJson();
                 ValidatePackageJson();
                 LoadChangelog();
@@ -123,6 +124,43 @@ namespace VPMPublish
 
             gitProcess.Close();
             ghProcess.Close();
+        }
+
+        private List<string> RunProcess(string fileName, params string[] args)
+        {
+            startInfo.FileName = fileName;
+            startInfo.ArgumentList.Clear();
+            foreach (string arg in args)
+                startInfo.ArgumentList.Add(arg);
+            startInfo.UseShellExecute = false;
+            startInfo.RedirectStandardInput = true;
+            startInfo.RedirectStandardError = false;
+            startInfo.RedirectStandardOutput = true;
+            startInfo.StandardOutputEncoding = Encoding.UTF8;
+            using Process? process = Process.Start(startInfo);
+            if (process == null)
+                throw new Exception($"Unable to start a git or gh process even "
+                    + $"though their availability has been validated already."
+                );
+
+            List<string> lines = new List<string>();
+            process.OutputDataReceived += (object o, DataReceivedEventArgs e) => {
+                if (e.Data != null)
+                    lines.Add(e.Data);
+            };
+            process.BeginOutputReadLine();
+            process.WaitForExit();
+            process.Close();
+            return lines;
+        }
+
+        private void EnsureIsMainBranch()
+        {
+            string currentBranch = RunProcess("git", "branch", "--show-current").First();
+            if (currentBranch != "main" && currentBranch != "master") // TODO: cmd option for main branch name
+                throw Abort($"Must only publish from the main/master branch, "
+                    + $"the currently checked out branch is {currentBranch}."
+                );
         }
 
         private void LoadPackageJson()
