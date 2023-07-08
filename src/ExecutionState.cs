@@ -328,7 +328,12 @@ namespace VPMPublish
             string expectedTag = $"v{packageJson!.Version}";
             List<string> tags = RunProcess("git", "tag", "--list", expectedTag);
             if (tags.Any(t => t == expectedTag))
-                throw Abort($"The git tag '{expectedTag}' already exists.");
+                throw Abort($"The git tag '{expectedTag}' already exists. If you are rerunning this program "
+                    + $"after an error occurred and now you're getting this error, there's a very high chance "
+                    + $"that all you have to do is run 'git tag --delete {expectedTag}' and if it's already "
+                    + $"been pushed also 'git push origin :refs/tags/{expectedTag}'. For reference: "
+                    + $"https://stackoverflow.com/questions/5480258/how-can-i-delete-a-remote-tag"
+                );
         }
 
         private void LoadChangelog()
