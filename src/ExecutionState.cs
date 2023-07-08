@@ -13,6 +13,7 @@ namespace VPMPublish
     {
         private bool didAbort;
         private string packageRoot;
+        private string mainBranch;
         private ProcessStartInfo startInfo;
 
         private PackageJson? packageJson;
@@ -33,9 +34,10 @@ namespace VPMPublish
         private ZipArchive? packageArchive;
         private string? sha256Checksum;
 
-        public ExecutionState(string packageRoot)
+        public ExecutionState(string packageRoot, string mainBranch)
         {
             this.packageRoot = packageRoot;
+            this.mainBranch = mainBranch;
             startInfo = new ProcessStartInfo()
             {
                 WindowStyle = ProcessWindowStyle.Hidden,
@@ -205,9 +207,9 @@ namespace VPMPublish
         private void EnsureIsMainBranch()
         {
             string currentBranch = RunProcess("git", "branch", "--show-current").First();
-            if (currentBranch != "main" && currentBranch != "master") // TODO: cmd option for main branch name
-                throw Abort($"Must only publish from the main/master branch, "
-                    + $"the currently checked out branch is {currentBranch}."
+            if (currentBranch != mainBranch)
+                throw Abort($"Must only publish from the '{mainBranch}' branch, "
+                    + $"the currently checked out branch is '{currentBranch}'."
                 );
         }
 

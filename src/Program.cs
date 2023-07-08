@@ -21,15 +21,23 @@ namespace VPMPublish
             var publishCommand = new Command("publish", "Publish a package to GitHub.");
             rootCommand.AddCommand(publishCommand);
             publishCommand.Add(packageRootOption);
-            publishCommand.SetHandler(Publish, packageRootOption);
+
+            var mainBranchNameOption = new Option<string>(
+                "--main-branch",
+                () => "main",
+                "The name of the main branch. One must only create packages from the main branch."
+            );
+            publishCommand.Add(mainBranchNameOption);
+
+            publishCommand.SetHandler(Publish, packageRootOption, mainBranchNameOption);
 
             int libExitCode = await rootCommand.InvokeAsync(args);
             return libExitCode != 0 ? libExitCode : exitCode;
         }
 
-        private static void Publish(string packageRoot)
+        private static void Publish(string packageRoot, string mainBranch)
         {
-            var context = new ExecutionState(packageRoot);
+            var context = new ExecutionState(packageRoot, mainBranch);
             exitCode = context.Publish();
         }
     }
