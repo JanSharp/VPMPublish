@@ -143,7 +143,7 @@ namespace VPMPublish
             ghProcess.Close();
         }
 
-        private List<string> RunProcess(string fileName, params string[] args)
+        private List<string> CheckRunProcess(string? errorMsgPrefix, string fileName, params string[] args)
         {
             startInfo.FileName = fileName;
             startInfo.ArgumentList.Clear();
@@ -177,7 +177,8 @@ namespace VPMPublish
             process.WaitForExit();
 
             if (process.ExitCode != 0)
-                throw Abort($"The process '{fileName}' exited with the exit code {process.ExitCode}.\n"
+                throw Abort((errorMsgPrefix == null ? "" : errorMsgPrefix + "\n\n")
+                    + $"The process '{fileName}' exited with the exit code {process.ExitCode}.\n"
                     + $"The arguments were:\n{string.Join('\n', args.Select(a => $"'{a}'"))}\n\n"
                     + $"The process had the following error output:\n{string.Join('\n', errorLines)}"
                 );
@@ -185,6 +186,11 @@ namespace VPMPublish
             process.Close();
 
             return lines;
+        }
+
+        private List<string> RunProcess(string fileName, params string[] args)
+        {
+            return CheckRunProcess(null, fileName, args);
         }
 
         private void EnsureGitHubCLIIsAuthenticated()
@@ -210,6 +216,16 @@ namespace VPMPublish
                 throw Abort($"The working tree must be clean - have no uncommited changes.\n"
                     + $"Current changes:\n{string.Join('\n', changes)}"
                 );
+        }
+
+        private void EnsureRemoteIsReachable()
+        {
+            CheckRunProcess(
+                "Unable to reach the remote, make sure git authentication (https or ssh) "
+                    + "is setup correctly. If you are using ssh, make sure to run 'ssh-add' "
+                    + "if you haven't already this session.",
+                "git", "fetch", "--dry-run"
+            );
         }
 
         private void LoadPackageJson()
