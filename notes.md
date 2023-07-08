@@ -45,6 +45,8 @@
     - `"version"`
     - `"url"`
     - `"changelogURL"`
+  - git commit
+    - don't push to allow for the programmer to change the commit if wanted
 
 # Changelog Util
 
