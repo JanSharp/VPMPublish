@@ -68,6 +68,8 @@ namespace VPMPublish
 
         public int Publish()
         {
+            string currentDir = Directory.GetCurrentDirectory();
+            Directory.SetCurrentDirectory(packageRoot);
             try
             {
                 EnsureCommandAvailability();
@@ -83,17 +85,19 @@ namespace VPMPublish
                 CalculateSha256Checksum();
                 GenerateReleaseNotes();
                 CreateGitTag();
-                // Done.
-                CleanupPackage();
             }
             catch (Exception e)
             {
-                CleanupPackage();
                 if (!didAbort)
                     throw;
                 Console.Error.WriteLine(e.Message);
                 Console.Error.Flush();
                 return 1;
+            }
+            finally
+            {
+                CleanupPackage();
+                Directory.SetCurrentDirectory(currentDir);
             }
             return 0;
         }
