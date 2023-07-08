@@ -100,7 +100,10 @@ namespace VPMPublish
             // Both use the same arg.
             startInfo.ArgumentList.Clear();
             startInfo.ArgumentList.Add("--version");
-            startInfo.UseShellExecute = true;
+            startInfo.UseShellExecute = false;
+            startInfo.RedirectStandardInput = true;
+            startInfo.RedirectStandardError = true;
+            startInfo.RedirectStandardOutput = true;
 
             startInfo.FileName = "git";
             using Process? gitProcess = Process.Start(startInfo);
@@ -112,6 +115,11 @@ namespace VPMPublish
                     + $"({(gitProcess == null ? "failed to start 'git'" : "'git' may be fine")}) "
                     + $"({(ghProcess == null ? "failed to start 'gh'" : "'gh' may be fine")})."
                 );
+
+            gitProcess.BeginErrorReadLine();
+            gitProcess.BeginOutputReadLine();
+            ghProcess.BeginErrorReadLine();
+            ghProcess.BeginOutputReadLine();
 
             gitProcess.WaitForExit();
             ghProcess.WaitForExit();
