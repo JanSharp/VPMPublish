@@ -73,6 +73,7 @@ namespace VPMPublish
             try
             {
                 EnsureCommandAvailability();
+                EnsureGitHubCLIIsAuthenticated();
                 EnsureIsMainBranch();
                 EnsureCleanWorkingTree();
                 LoadPackageJson();
@@ -184,6 +185,13 @@ namespace VPMPublish
             process.Close();
 
             return lines;
+        }
+
+        private void EnsureGitHubCLIIsAuthenticated()
+        {
+            // Just use the generic error handling of RunProcess, as that will include the
+            // error message produced by 'gh', which includes (minor, but good enough) instructions.
+            RunProcess("gh", "auth", "status", "--hostname", "github.com");
         }
 
         private void EnsureIsMainBranch()

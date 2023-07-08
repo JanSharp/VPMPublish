@@ -3,6 +3,7 @@
 
 - validation
   - ensure that the `git` and `gh` commands are available
+  - ensure that `gh` has an authorized token... maybe?
   - ensure that the the `main` (or `master`) branch is checked out
   - ensure that the working tree is clean
   - validate project structure
