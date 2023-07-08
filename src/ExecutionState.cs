@@ -85,6 +85,7 @@ namespace VPMPublish
                 CalculateSha256Checksum();
                 GenerateReleaseNotes();
                 CreateGitTag();
+                CreateGitHubRelease();
             }
             catch (Exception e)
             {
@@ -427,6 +428,22 @@ namespace VPMPublish
                 "--annotate",
                 $"--message=(zip package sha256 checksum: {sha256Checksum})",
                 $"v{packageJson!.Version}"
+            );
+        }
+
+        private void CreateGitHubRelease()
+        {
+            // Technically this doesn't have to push the main branch, because pushing the tag
+            // does ultimately push all commits leading up to the tag, however it would not make sense
+            // to have a tag that's ahead of th main branch, which it's supposed to be _on_ the main branch
+            RunProcess("git", "push");
+            RunProcess("git", "push", "--tags");
+            RunProcess(
+                "gh", "release", "create", $"v{packageJson!.Version}",
+                packageFileName!,
+                "--verify-tag",
+                "--title", $"v{packageJson!.Version}",
+                "--notes-file", releaseNotesFileName!
             );
         }
 

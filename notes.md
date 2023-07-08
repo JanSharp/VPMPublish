@@ -35,8 +35,8 @@
 - create annotated git tag for this version
   - use the form `vx.x.x`
   - include the sha256 checksum in the annotation for the tag in a machine readable way
-- push the tag
-- create github release
+- create GitHub release
+  - push the previously created tag
   - attach the zip file
   - use the generated release notes
   - use the freshly created git tag
