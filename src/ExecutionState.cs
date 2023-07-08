@@ -156,7 +156,7 @@ namespace VPMPublish
             startInfo.StandardOutputEncoding = Encoding.UTF8;
             using Process? process = Process.Start(startInfo);
             if (process == null)
-                throw new Exception($"Unable to start a git or gh process even "
+                throw new Exception($"Unable to start a '{fileName}' process even "
                     + $"though their availability has been validated already."
                 );
 
