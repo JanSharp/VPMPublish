@@ -72,6 +72,7 @@ namespace VPMPublish
             {
                 EnsureCommandAvailability();
                 EnsureIsMainBranch();
+                EnsureCleanWorkingTree();
                 LoadPackageJson();
                 ValidatePackageJson();
                 LoadChangelog();
@@ -168,6 +169,15 @@ namespace VPMPublish
             if (currentBranch != "main" && currentBranch != "master") // TODO: cmd option for main branch name
                 throw Abort($"Must only publish from the main/master branch, "
                     + $"the currently checked out branch is {currentBranch}."
+                );
+        }
+
+        private void EnsureCleanWorkingTree()
+        {
+            List<string> changes = RunProcess("git", "status", "--porcelain");
+            if (changes.Any()) /// cSpell:ignore uncommited
+                throw Abort($"The working tree must be clean - have no uncommited changes.\n"
+                    + $"Current changes:\n{string.Join('\n', changes)}"
                 );
         }
 
