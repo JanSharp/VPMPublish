@@ -150,7 +150,7 @@ namespace VPMPublish
                 startInfo.ArgumentList.Add(arg);
             startInfo.UseShellExecute = false;
             startInfo.RedirectStandardInput = true;
-            startInfo.RedirectStandardError = false;
+            startInfo.RedirectStandardError = true;
             startInfo.RedirectStandardOutput = true;
             startInfo.StandardOutputEncoding = Encoding.UTF8;
             using Process? process = Process.Start(startInfo);
@@ -165,8 +165,24 @@ namespace VPMPublish
                     lines.Add(e.Data);
             };
             process.BeginOutputReadLine();
+
+            List<string> errorLines = new List<string>();
+            process.ErrorDataReceived += (object o, DataReceivedEventArgs e) => {
+                if (e.Data != null)
+                    errorLines.Add(e.Data);
+            };
+            process.BeginErrorReadLine();
+
             process.WaitForExit();
+
+            if (process.ExitCode != 0)
+                throw Abort($"The process '{fileName}' exited with the exit code {process.ExitCode}.\n"
+                    + $"The arguments were:\n{string.Join('\n', args.Select(a => $"'{a}'"))}\n\n"
+                    + $"The process had the following error output:\n{string.Join('\n', errorLines)}"
+                );
+
             process.Close();
+
             return lines;
         }
 
