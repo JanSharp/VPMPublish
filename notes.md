@@ -57,3 +57,10 @@
 - generate draft
   - add new entry at the top with the version from the package.json, and the current UTC date
   - use git log to generate a changelog draft
+
+# Normalize package.json
+
+Why? you might ask. Because the order of fields is fixed when serializing, so this actually changes field order, unless the given package.json already has the "correct" order.
+
+- Deserialize `package.json`
+- Serialize `package.json`
