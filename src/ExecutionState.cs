@@ -14,6 +14,7 @@ namespace VPMPublish
         private bool didAbort;
         private string packageRoot;
         private string mainBranch;
+        private bool validateOnly;
         private ProcessStartInfo startInfo;
 
         private PackageJson? packageJson;
@@ -34,10 +35,11 @@ namespace VPMPublish
         private ZipArchive? packageArchive;
         private string? sha256Checksum;
 
-        public ExecutionState(string packageRoot, string mainBranch)
+        public ExecutionState(string packageRoot, string mainBranch, bool validateOnly)
         {
             this.packageRoot = packageRoot;
             this.mainBranch = mainBranch;
+            this.validateOnly = validateOnly;
             startInfo = new ProcessStartInfo()
             {
                 WindowStyle = ProcessWindowStyle.Hidden,
@@ -84,6 +86,8 @@ namespace VPMPublish
                 EnsureTagDoesNotExist();
                 LoadChangelog();
                 ValidateChangelog();
+                if (validateOnly)
+                    return 0;
                 PrepareForPackage();
                 AddAllFilesToTheZipPackage();
                 CalculateSha256Checksum();

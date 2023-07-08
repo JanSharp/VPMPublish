@@ -29,15 +29,21 @@ namespace VPMPublish
             );
             publishCommand.Add(mainBranchNameOption);
 
-            publishCommand.SetHandler(Publish, packageRootOption, mainBranchNameOption);
+            var validateOnlyOption = new Option<bool>(
+                "--validate-only",
+                "When set, only runs all validation steps, but won't actually perform any publish steps."
+            );
+            publishCommand.Add(validateOnlyOption);
+
+            publishCommand.SetHandler(Publish, packageRootOption, mainBranchNameOption, validateOnlyOption);
 
             int libExitCode = await rootCommand.InvokeAsync(args);
             return libExitCode != 0 ? libExitCode : exitCode;
         }
 
-        private static void Publish(string packageRoot, string mainBranch)
+        private static void Publish(string packageRoot, string mainBranch, bool validateOnly)
         {
-            var context = new ExecutionState(packageRoot, mainBranch);
+            var context = new ExecutionState(packageRoot, mainBranch, validateOnly);
             exitCode = context.Publish();
         }
     }
