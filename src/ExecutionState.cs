@@ -82,6 +82,7 @@ namespace VPMPublish
                 AddAllFilesToTheZipPackage();
                 CalculateSha256Checksum();
                 GenerateReleaseNotes();
+                CreateGitTag();
                 // Done.
                 CleanupPackage();
             }
@@ -412,6 +413,17 @@ namespace VPMPublish
             file.WriteLine();
             file.WriteLine($"`{sha256Checksum!}`");
             file.Close();
+        }
+
+        private void CreateGitTag()
+        {
+            RunProcess(
+                "git",
+                "tag",
+                "--annotate",
+                $"--message=(zip package sha256 checksum: {sha256Checksum})",
+                $"v{packageJson!.Version}"
+            );
         }
 
         private void DeleteTempDir()
