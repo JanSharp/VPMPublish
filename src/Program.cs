@@ -27,10 +27,10 @@ namespace VPMPublish
             return libExitCode != 0 ? libExitCode : exitCode;
         }
 
-        private static async void Publish(string packageRoot)
+        private static void Publish(string packageRoot)
         {
             var context = new ExecutionState(packageRoot);
-            exitCode = await context.Publish();
+            exitCode = context.Publish();
         }
     }
 }

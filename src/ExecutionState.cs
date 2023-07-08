@@ -39,7 +39,6 @@ namespace VPMPublish
             {
                 WindowStyle = ProcessWindowStyle.Hidden,
                 CreateNoWindow = true,
-                UseShellExecute = true,
                 WorkingDirectory = packageRoot,
             };
         }
@@ -67,11 +66,11 @@ namespace VPMPublish
             return result;
         }
 
-        public async Task<int> Publish()
+        public int Publish()
         {
             try
             {
-                await EnsureCommandAvailability();
+                EnsureCommandAvailability();
                 LoadPackageJson();
                 ValidatePackageJson();
                 LoadChangelog();
@@ -95,16 +94,17 @@ namespace VPMPublish
             return 0;
         }
 
-        private async Task EnsureCommandAvailability()
+        private void EnsureCommandAvailability()
         {
             // Both use the same arg.
             startInfo.ArgumentList.Clear();
             startInfo.ArgumentList.Add("--version");
+            startInfo.UseShellExecute = true;
 
             startInfo.FileName = "git";
-            Process? gitProcess = Process.Start(startInfo);
+            using Process? gitProcess = Process.Start(startInfo);
             startInfo.FileName = "gh";
-            Process? ghProcess = Process.Start(startInfo);
+            using Process? ghProcess = Process.Start(startInfo);
 
             if (gitProcess == null || ghProcess == null)
                 throw Abort($"This program require both git and the github cli to be installed "
@@ -112,15 +112,17 @@ namespace VPMPublish
                     + $"({(ghProcess == null ? "failed to start 'gh'" : "'gh' may be fine")})."
                 );
 
-            Task gitWaitTask = gitProcess.WaitForExitAsync();
-            Task ghWaitTask = ghProcess.WaitForExitAsync();
-            await Task.WhenAll(gitWaitTask, ghWaitTask);
+            gitProcess.WaitForExit();
+            ghProcess.WaitForExit();
 
             if (gitProcess.ExitCode != 0 || ghProcess.ExitCode != 0)
                 throw Abort($"This program require both git and the github cli to be installed "
                     + $"({(gitProcess.ExitCode != 0 ? $"'git' exited with exit code {gitProcess.ExitCode}" : "'git' is fine")}) "
                     + $"({(ghProcess.ExitCode != 0 ? $"'gh' exited with exit code {ghProcess.ExitCode}" : "'gh' is fine")})."
                 );
+
+            gitProcess.Close();
+            ghProcess.Close();
         }
 
         private void LoadPackageJson()
