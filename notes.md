@@ -13,6 +13,7 @@
     - "url": "https://github.com/JanSharp/VCCDummyPackage/releases/download/v0.1.0/com.jansharp.dummy.zip",
     - "changelogUrl": "https://github.com/JanSharp/VCCDummyPackage/blob/v0.1.0/CHANGELOG.md",
     - abort if they are invalid or if the version number doesn't match
+  - ensure the tag `v{packageJson.version}` doesn't exist yet
   - extract changelog entry
     - validate changelog's top block's version number matches, abort if it doesn't
     - validate changelog date, abort if it doesn't match, telling the user what date it should have so they can update it and `git add .` and `git commit --amend --no-edit`. It'll use UTC

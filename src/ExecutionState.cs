@@ -75,6 +75,7 @@ namespace VPMPublish
                 EnsureCleanWorkingTree();
                 LoadPackageJson();
                 ValidatePackageJson();
+                EnsureTagDoesNotExist();
                 LoadChangelog();
                 ValidateChangelog();
                 PrepareForPackage();
@@ -272,6 +273,14 @@ namespace VPMPublish
                 throw Abort($"The package.json \"url\" contains the github repo name \"{repoInUrl}\" "
                     + $"while the \"changelogUrl\" contains \"{repoInChangelogUrl}\", which is a mismatch."
                 );
+        }
+
+        private void EnsureTagDoesNotExist()
+        {
+            string expectedTag = $"v{packageJson!.Version}";
+            List<string> tags = RunProcess("git", "tag", "--list", expectedTag);
+            if (tags.Any(t => t == expectedTag))
+                throw Abort($"The git tag '{expectedTag}' already exists.");
         }
 
         private void LoadChangelog()
