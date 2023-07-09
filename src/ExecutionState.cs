@@ -71,6 +71,8 @@ namespace VPMPublish
             return result;
         }
 
+        private void Info(string msg) => Console.WriteLine(msg);
+
         public int Publish()
         {
             string currentDir = Directory.GetCurrentDirectory();
@@ -114,6 +116,8 @@ namespace VPMPublish
 
         private void EnsureCommandAvailability()
         {
+            Info("Ensuring that 'git' and 'gh' (GitHub CLI) programs are available.");
+
             // Both use the same arg.
             startInfo.ArgumentList.Clear();
             startInfo.ArgumentList.Add("--version");
@@ -203,6 +207,8 @@ namespace VPMPublish
 
         private void EnsureGitHubCLIIsAuthenticated()
         {
+            Info("Ensuring 'gh' is authenticated with github.com.");
+
             // Just use the generic error handling of RunProcess, as that will include the
             // error message produced by 'gh', which includes (minor, but good enough) instructions.
             RunProcess("gh", "auth", "status", "--hostname", "github.com");
@@ -210,6 +216,8 @@ namespace VPMPublish
 
         private void EnsureIsMainBranch()
         {
+            Info($"Ensuring the git branch '{mainBranch}' is checked out.");
+
             string currentBranch = RunProcess("git", "branch", "--show-current").First();
             if (currentBranch != mainBranch)
                 throw Abort($"Must only publish from the '{mainBranch}' branch, "
@@ -219,6 +227,8 @@ namespace VPMPublish
 
         private void EnsureCleanWorkingTree()
         {
+            Info("Ensuring the git working is clean.");
+
             List<string> changes = RunProcess("git", "status", "--porcelain");
             if (changes.Any()) /// cSpell:ignore uncommited
                 throw Abort($"The working tree must be clean - have no uncommited changes.\n"
@@ -228,6 +238,8 @@ namespace VPMPublish
 
         private void EnsureRemoteIsReachable()
         {
+            Info("Ensuring the git remote for the current branch is reachable.");
+
             CheckRunProcess(
                 "Unable to reach the remote, make sure git authentication (https or ssh) "
                     + "is setup correctly. If you are using ssh, make sure to run 'ssh-add' "
@@ -238,6 +250,8 @@ namespace VPMPublish
 
         private void LoadPackageJson()
         {
+            Info("Ensuring 'package.json' exists and reading it.");
+
             string packageJsonPath = Path.Combine(packageRoot, "package.json");
             if (!File.Exists(packageJsonPath))
                 throw Abort(new FileNotFoundException(
@@ -267,6 +281,8 @@ namespace VPMPublish
 
         public void ValidatePackageJson()
         {
+            Info("Validating the name, version, url and changelogUrl in the package.json.");
+
             string packageName = packageJson!.Name;
             string packageVersion = packageJson.Version;
 
@@ -332,6 +348,8 @@ namespace VPMPublish
         private void EnsureTagDoesNotExist()
         {
             string expectedTag = $"v{packageJson!.Version}";
+            Info($"Ensuring that the git tag '{expectedTag}' doesn't already exist.");
+
             List<string> tags = RunProcess("git", "tag", "--list", expectedTag);
             if (tags.Any(t => t == expectedTag))
                 throw Abort($"The git tag '{expectedTag}' already exists. If you are rerunning this program "
@@ -344,6 +362,8 @@ namespace VPMPublish
 
         private void LoadChangelog()
         {
+            Info($"Ensuring CHANGELOG.md exists and reading it.");
+
             string changelogPath = Path.Combine(packageRoot, "CHANGELOG.md");
             if (!File.Exists(changelogPath))
                 throw Abort(new FileNotFoundException(
@@ -379,6 +399,8 @@ namespace VPMPublish
 
         private void ValidateChangelog()
         {
+            Info("Validating the top changelog entry in CHANGELOG.md, its version and date.");
+
             Match entryMatch = changelogEntryRegex.Match(wholeChangelog!);
 
             if (!entryMatch.Success)
@@ -416,6 +438,8 @@ namespace VPMPublish
 
         private void PrepareForPackage()
         {
+            Info("Creating folder in the system's temp directory and creating the zip file inside.");
+
             tempDirName = Directory.CreateTempSubdirectory("VPMPublish").FullName;
 
             packageFileName = Path.Combine(tempDirName, packageJson!.Name + ".zip");
@@ -428,6 +452,8 @@ namespace VPMPublish
 
         private void AddAllFilesToTheZipPackage()
         {
+            Info("Adding all files from the package to the zip archive (file).");
+
             string Combine(string left, string right) => left == "" ? right : left + "/" + right;
 
             void Walk(DirectoryInfo currentDirectory, string currentRelativeName)
@@ -451,6 +477,8 @@ namespace VPMPublish
 
         private void CalculateSha256Checksum()
         {
+            Info("Calculating the sha256 checksum of the complete zip file.");
+
             using FileStream fileStream = File.OpenRead(packageFileName!);
             sha256Checksum = Convert.ToHexString(SHA256.Create().ComputeHash(fileStream)).ToLower();
             fileStream.Close();
@@ -458,6 +486,8 @@ namespace VPMPublish
 
         private void GenerateReleaseNotes()
         {
+            Info("Generating release notes for the GitHub release.");
+
             var file = File.CreateText(releaseNotesFileName!);
             file.WriteLine("// TODO: Link to human readable listing page here.");
             file.WriteLine();
@@ -475,6 +505,10 @@ namespace VPMPublish
 
         private void CreateGitTag()
         {
+            Info($"Creating the git tag 'v{packageJson!.Version}' and adding the sha256 checksum "
+                + $"to its message in a machine readable way. Used when generating the VCC listing."
+            );
+
             RunProcess(
                 "git",
                 "tag",
@@ -486,6 +520,10 @@ namespace VPMPublish
 
         private void CreateGitHubRelease()
         {
+            Info("Pushing the current branch, pushing tags and creating the GitHub release "
+                + "with the zip file and release notes attached."
+            );
+
             // Technically this doesn't have to push the main branch, because pushing the tag
             // does ultimately push all commits leading up to the tag, however it would not make sense
             // to have a tag that's ahead of th main branch, which it's supposed to be _on_ the main branch
@@ -502,6 +540,8 @@ namespace VPMPublish
 
         private void IncrementVersionNumber()
         {
+            Info("Incrementing version (including url and changelogUrl) in package.json and creating a commit locally.");
+
             SemVersion incrementedVersion = version!.WithPatch(version.Patch + 1);
             string incVersionStr = incrementedVersion.ToString();
             packageJson!.Url = packageJson.Url.Replace(packageJson.Version, incVersionStr);
@@ -522,7 +562,10 @@ namespace VPMPublish
         private void DeleteTempDir()
         {
             if (tempDirName != null && Directory.Exists(tempDirName))
+            {
+                Info("Deleting the temp directory.");
                 Directory.Delete(tempDirName, true);
+            }
         }
 
         ///<summary>
