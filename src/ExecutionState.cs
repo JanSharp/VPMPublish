@@ -473,7 +473,7 @@ namespace VPMPublish
                 throw Abort($"The version of the top entry in the changelog is '{entryMatch.Groups["version"].Value}' "
                     + $"while the version in the package.json is '{packageJson.Version}', which is a mismatch. \n"
                     + $"There's a good chance you forgot to update the changelog for this version, please refer to "
-                    + $"// TODO: insert link to documentation for generating the changelog entry here here."
+                    + $"https://github.com/JanSharp/VPMPublish#creating-a-release"
                 );
 
             string dateStr = entryMatch.Groups["date"].Value;
