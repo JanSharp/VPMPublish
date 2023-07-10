@@ -555,15 +555,14 @@ namespace VPMPublish
 
         private void CreateGitHubRelease()
         {
-            Info("Pushing the current branch, pushing tags and creating the GitHub release "
-                + "with the zip file and release notes attached."
-            );
-
             // Technically this doesn't have to push the main branch, because pushing the tag
             // does ultimately push all commits leading up to the tag, however it would not make sense
             // to have a tag that's ahead of th main branch, which it's supposed to be _on_ the main branch
+            Info("Pushing the current branch and pushing tags.");
             RunProcess("git", "push");
             RunProcess("git", "push", "--tags");
+
+            Info("Creating the GitHub release with the zip file and release notes attached.");
             RunProcess(
                 "gh", "release", "create", $"v{packageJson!.Version}",
                 packageFileName!,
