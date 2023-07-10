@@ -63,4 +63,5 @@
 Why? you might ask. Because the order of fields is fixed when serializing, so this actually changes field order, unless the given package.json already has the "correct" order.
 
 - Deserialize `package.json`
+- Validate, using the same validation for name, version, url and changelogUrl as publish
 - Serialize `package.json`

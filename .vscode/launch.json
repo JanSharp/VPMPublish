@@ -12,7 +12,7 @@
       // If you have changed target frameworks, make sure to update the program path.
       "program": "${workspaceFolder}/bin/Debug/net7.0/VPMPublish.dll",
       "args": [
-        "changelog-draft",
+        "normalize-package-json",
         "--package-root",
         "/mnt/big/dev/unity/DummyCustomVPMPackage/Packages/com.jansharp.dummy",
       ],

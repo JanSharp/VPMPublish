@@ -43,6 +43,12 @@ namespace VPMPublish
 
             changelogDraftCommand.SetHandler(ChangelogDraft, packageRootOption, mainBranchNameOption);
 
+            var normalizePackageJsonCommand = new Command("normalize-package-json", "Normalize package.json, specifically the order of fields.");
+            rootCommand.AddCommand(normalizePackageJsonCommand);
+            normalizePackageJsonCommand.Add(packageRootOption);
+
+            normalizePackageJsonCommand.SetHandler(NormalizePackageJson, packageRootOption);
+
             int libExitCode = await rootCommand.InvokeAsync(args);
             return libExitCode != 0 ? libExitCode : exitCode;
         }
@@ -57,6 +63,12 @@ namespace VPMPublish
         {
             var context = new ExecutionState(packageRoot, mainBranch, false);
             exitCode = context.ChangelogDraft();
+        }
+
+        private static void NormalizePackageJson(string packageRoot)
+        {
+            var context = new ExecutionState(packageRoot, "main", false);
+            exitCode = context.NormalizePackageJson();
         }
     }
 }

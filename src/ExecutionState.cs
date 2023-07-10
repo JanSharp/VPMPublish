@@ -146,6 +146,31 @@ namespace VPMPublish
             return 0;
         }
 
+        public int NormalizePackageJson()
+        {
+            string currentDir = Directory.GetCurrentDirectory();
+            Directory.SetCurrentDirectory(packageRoot);
+            try
+            {
+                LoadPackageJson();
+                ValidatePackageJson();
+                SerializePackageJson(silent: false);
+            }
+            catch (Exception e)
+            {
+                if (!didAbort)
+                    throw;
+                Console.Error.WriteLine(e.Message);
+                Console.Error.Flush();
+                return 1;
+            }
+            finally
+            {
+                Directory.SetCurrentDirectory(currentDir);
+            }
+            return 0;
+        }
+
         private void EnsureCommandAvailability()
         {
             Info("Ensuring that 'git' and 'gh' (GitHub CLI) programs are available.");
@@ -572,6 +597,20 @@ namespace VPMPublish
             );
         }
 
+        private void SerializePackageJson(bool silent)
+        {
+            if (!silent)
+                Info("Serializing package.json data and writing back to the file.");
+
+            using FileStream fileStream = File.OpenWrite(Path.Combine(packageRoot, "package.json"));
+            JsonSerializer.Serialize(fileStream, packageJson!, new JsonSerializerOptions()
+            {
+                WriteIndented = true,
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+            });
+            fileStream.Close();
+        }
+
         private void IncrementVersionNumber()
         {
             Info("Incrementing version (including url and changelogUrl) in package.json and creating a commit locally.");
@@ -582,13 +621,7 @@ namespace VPMPublish
             packageJson.ChangelogUrl = packageJson.ChangelogUrl!.Replace(packageJson.Version, incVersionStr);
             packageJson.Version = incVersionStr;
 
-            using FileStream fileStream = File.OpenWrite(Path.Combine(packageRoot, "package.json"));
-            JsonSerializer.Serialize(fileStream, packageJson, new JsonSerializerOptions()
-            {
-                WriteIndented = true,
-                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-            });
-            fileStream.Close();
+            SerializePackageJson(silent: true);
 
             RunProcess("git", "commit", "-a", "-m", $"Move to version `v{incVersionStr}`");
         }
