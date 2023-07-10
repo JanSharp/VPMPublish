@@ -17,16 +17,15 @@ namespace VPMPublish
                 "The path to the root of the package which resides in the Packages folder in Unity. "
                     + "When omitted uses the current working directory."
             );
-
-            var publishCommand = new Command("publish", "Publish a package to GitHub.");
-            rootCommand.AddCommand(publishCommand);
-            publishCommand.Add(packageRootOption);
-
             var mainBranchNameOption = new Option<string>(
                 "--main-branch",
                 () => "main",
                 "The name of the main branch. One must only create packages from the main branch."
             );
+
+            var publishCommand = new Command("publish", "Publish a package to GitHub.");
+            rootCommand.AddCommand(publishCommand);
+            publishCommand.Add(packageRootOption);
             publishCommand.Add(mainBranchNameOption);
 
             var validateOnlyOption = new Option<bool>(
@@ -37,6 +36,13 @@ namespace VPMPublish
 
             publishCommand.SetHandler(Publish, packageRootOption, mainBranchNameOption, validateOnlyOption);
 
+            var changelogDraftCommand = new Command("changelog-draft", "Generate a changelog draft for the current version.");
+            rootCommand.AddCommand(changelogDraftCommand);
+            changelogDraftCommand.Add(packageRootOption);
+            changelogDraftCommand.Add(mainBranchNameOption);
+
+            changelogDraftCommand.SetHandler(ChangelogDraft, packageRootOption, mainBranchNameOption);
+
             int libExitCode = await rootCommand.InvokeAsync(args);
             return libExitCode != 0 ? libExitCode : exitCode;
         }
@@ -45,6 +51,12 @@ namespace VPMPublish
         {
             var context = new ExecutionState(packageRoot, mainBranch, validateOnly);
             exitCode = context.Publish();
+        }
+
+        private static void ChangelogDraft(string packageRoot, string mainBranch)
+        {
+            var context = new ExecutionState(packageRoot, mainBranch, false);
+            exitCode = context.ChangelogDraft();
         }
     }
 }

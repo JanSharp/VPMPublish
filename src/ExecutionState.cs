@@ -16,15 +16,15 @@ namespace VPMPublish
         private string mainBranch;
         private bool validateOnly;
         private ProcessStartInfo startInfo;
-
-        private PackageJson? packageJson;
-        private SemVersion? version;
-        private string? wholeChangelog;
         ///<summary>
         ///Since time is passing during the execution of this program,
         ///make sure the same date is used throughout all of it.
         ///</summary>
-        private string? currentDateStr;
+        private string currentDateStr;
+
+        private PackageJson? packageJson;
+        private SemVersion? version;
+        private string? wholeChangelog;
         ///<summary>
         ///Excludes the `## [x.x.x] - YYYY-MM-DD` line.
         ///</summary>
@@ -46,6 +46,7 @@ namespace VPMPublish
                 CreateNoWindow = true,
                 WorkingDirectory = packageRoot,
             };
+            currentDateStr = DateTime.UtcNow.ToString("yyyy-MM-dd");
         }
 
         // I seriously dislike these Abort and MayAbort functions,
@@ -109,6 +110,37 @@ namespace VPMPublish
             finally
             {
                 CleanupPackage();
+                Directory.SetCurrentDirectory(currentDir);
+            }
+            return 0;
+        }
+
+        public int ChangelogDraft()
+        {
+            string currentDir = Directory.GetCurrentDirectory();
+            Directory.SetCurrentDirectory(packageRoot);
+            try
+            {
+                EnsureCommandAvailability();
+                EnsureGitHubCLIIsAuthenticated();
+                EnsureIsMainBranch();
+                EnsureCleanWorkingTree();
+                LoadPackageJson();
+                ValidatePackageJson();
+                EnsureTagDoesNotExist();
+                LoadChangelog(acceptMissing: true);
+                GenerateChangelogDraft();
+            }
+            catch (Exception e)
+            {
+                if (!didAbort)
+                    throw;
+                Console.Error.WriteLine(e.Message);
+                Console.Error.Flush();
+                return 1;
+            }
+            finally
+            {
                 Directory.SetCurrentDirectory(currentDir);
             }
             return 0;
@@ -360,12 +392,15 @@ namespace VPMPublish
                 );
         }
 
-        private void LoadChangelog()
+        private void LoadChangelog(bool acceptMissing = false)
         {
-            Info($"Ensuring CHANGELOG.md exists and reading it.");
+            Info($"{(acceptMissing ? "Checking if" : "Ensuring")} CHANGELOG.md exists and reading it.");
 
             string changelogPath = Path.Combine(packageRoot, "CHANGELOG.md");
             if (!File.Exists(changelogPath))
+            {
+                if (acceptMissing)
+                    return;
                 throw Abort(new FileNotFoundException(
                     "The CHANGELOG.md file should be directly inside the 'package-root'. "
                         + "Changelogs are usually optional, however this publish script requires one. "
@@ -373,6 +408,7 @@ namespace VPMPublish
                         + "the only slight exception being how 'unreleased' changes are kept in there.",
                     changelogPath
                 ));
+            }
 
             wholeChangelog = File.ReadAllText(changelogPath);
         }
@@ -421,7 +457,6 @@ namespace VPMPublish
                     + $"which does not match the ISO-8601 format YYYY-MM-DD."
                 );
 
-            currentDateStr = DateTime.UtcNow.ToString("yyyy-MM-dd");
             if (dateStr != currentDateStr)
                 throw Abort($"The date for the top entry in the changelog is '{dateStr}' "
                     + $"which does not match the expected date '{currentDateStr}'. "
@@ -581,6 +616,88 @@ namespace VPMPublish
             }
             catch {} // Don't care about failure, the cleanup function is running in a 
             // catch block already, so if this fails it's a secondary, non important error.
+        }
+
+        private static Regex findFirstInsertLocationRegex = new Regex(
+            @"^(?:\r\n|\r|\n)# Changelog(?:\r\n|\r|\n){2}(?<pos>)",
+            RegexOptions.Compiled
+        );
+        private static Regex findSecondInsertLocationRegex = new Regex(
+            @"(?<pos>)(?:(?:\r\n|\r|\n)\[[^\r\n]+)+(?:\r\n|\r|\n)$",
+            RegexOptions.Compiled | RegexOptions.RightToLeft
+        );
+
+        private void GenerateChangelogDraft()
+        {
+            Info($"Generating changelog entry for `v{packageJson!.Version}`.");
+
+            string part1 = "";
+            string part2 = "";
+            string? lastVersion = null;
+
+            if (wholeChangelog != null)
+            {
+                Match changelogMatch = changelogEntryRegex.Match(wholeChangelog);
+                Match firstMatch = findFirstInsertLocationRegex.Match(wholeChangelog);
+                Match secondMatch = findSecondInsertLocationRegex.Match(wholeChangelog);
+                if (!changelogMatch.Success || !firstMatch.Success || !secondMatch.Success)
+                    throw Abort($"The changelog is malformed, please refer to "
+                        + $"https://common-changelog.org and verify your changelog. "
+                        + $"Note that this script requires exactly 1 blank line at "
+                        + $"both the top and bottom of the changelog file."
+                    );
+
+                lastVersion = changelogMatch.Groups["version"].Value;
+                if (lastVersion == packageJson!.Version)
+                    throw Abort($"The changelog already contains an entry for the current version "
+                        + $"{packageJson!.Version}. Cannot generate the same version entry twice."
+                    );
+
+                int firstPosition = firstMatch.Groups["pos"].Index;
+                int secondPosition = secondMatch.Groups["pos"].Index + 1;
+
+                part1 = wholeChangelog.Substring(firstPosition, secondPosition - firstPosition);
+                part2 = wholeChangelog.Substring(secondPosition);
+            }
+
+            Match urlMatch = packageUrlRegex.Match(packageJson!.Url);
+
+            string user = urlMatch.Groups["user"].Value;
+            string repo = urlMatch.Groups["repo"].Value;
+
+            string logFormat = $"--pretty=- %s ([`%h`](https://github.com/{user}/{repo}/commit/%H))";
+
+            List<string> log = wholeChangelog != null
+                ? RunProcess("git", "log", $"v{lastVersion}..HEAD", logFormat)
+                : RunProcess("git", "log", logFormat);
+
+            wholeChangelog = $"\n"
+                + $"# Changelog\n"
+                + $"\n"
+                + $"## [{packageJson.Version}] - {currentDateStr}\n"
+                + $"\n"
+                + $"_//" + $" TODO: Arrange the changes their appropriate categories, combine them, "
+                + $"or remove them. Use https://common-changelog.org for reference._\n"
+                + $"\n"
+                + $"### Temp Draft\n"
+                + $"\n"
+                + string.Join('\n', log) + $"\n"
+                + $"\n"
+                + $"### Changed\n"
+                + $"\n"
+                + $"### Added\n"
+                + $"\n"
+                + $"### Removed\n"
+                + $"\n"
+                + $"### Fixed\n"
+                + $"\n"
+                + part1
+                + $"[{packageJson.Version}]: https://github.com/{user}/{repo}/releases/tag/v{packageJson.Version}\n"
+                + part2;
+
+            File.WriteAllText(Path.Combine(packageRoot, "CHANGELOG.md"), wholeChangelog);
+
+            Info($"Use the commit message: Update changelog for v`{packageJson.Version}`");
         }
     }
 }
