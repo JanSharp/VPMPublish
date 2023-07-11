@@ -1,4 +1,4 @@
-﻿using System.CommandLine;
+using System.CommandLine;
 
 namespace VPMPublish
 {
@@ -52,8 +52,10 @@ namespace VPMPublish
             var generateVCCListing = new Command("generate-vcc-listing", "Generate the vcc listing and a human readable webpage. (Does not upload anything.)");
             rootCommand.AddCommand(generateVCCListing);
 
+            ///cSpell:ignore jansharp
             var nameOption = new Option<string>("--name", "The human readable name of the VCC Listing.");
-            var idOption = new Option<string>("--id", "The internal id of the VCC Listing, in the form of 'com.<company or user>.<some name>', all lowercase.");
+            var idOption = new Option<string>("--id", "The internal id of the VCC Listing. The format this is supposed to follow is unknown, "
+                + "but my guess is this: https://docs.unity3d.com/2019.4/Documentation/Manual/cus-naming.html. For example 'com.jansharp.dummy'.");
             var urlOption = new Option<string>("--url", "The full url to the resulting vcc listing json file, for example https://jansharp.github.io/dummyvcclisting.json.");
             var authorOption = new Option<string>("--author", "The email address of the author for this listing.");
             var outputDirOption = new Option<string>("--out-dir", "The directory the json file and the webpage file will be written to.");
@@ -104,14 +106,22 @@ namespace VPMPublish
         }
 
         private static void GenerateVCCListing(
-            string nameOption,
-            string idOption,
-            string urlOption,
-            string authorOption,
-            string outputDirOption,
-            string[] packagesArg)
+            string name,
+            string id,
+            string url,
+            string author,
+            string outputDir,
+            string[] packages)
         {
-            // TODO: impl
+            var context = new ListingExecutionState(
+                name,
+                id,
+                url,
+                author,
+                outputDir,
+                packages
+            );
+            exitCode = context.GenerateVCCListing();
         }
     }
 }

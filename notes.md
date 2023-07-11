@@ -70,9 +70,12 @@ Why? you might ask. Because the order of fields is fixed when serializing, so th
 
 - Validate
   - Ensure the `git` command is available
-  - Validate each given package path
+  - Validate `--url`, must be an actual url and end with `.json`
+  - Validate `--author`, must be an email address
+  - Validate `--out-dir`, must be an existing directory
+  - Validate each given package path argument
     - Has a `package.json` file
-    - Is a git repo
+    - Is a git repo, by checking for the `.git` folder
 - Load all required data
   - For each package
     - Get all version tags
@@ -85,11 +88,11 @@ Why? you might ask. Because the order of fields is fixed when serializing, so th
       - Validate that the version matches the tag version, otherwise abort
       - Add the `zipSHA256` field, using the extracted checksum from the git tag
 - Generate the listing json file
-  - Use the `name`, `id`, `url` and `author` provided as command line options
+  - Use the `--name`, `--id`, `--url` and `--author` provided as command line options
   - Use the retrieved `package.json` from every version of every package to build the `packages` object
-  - Write the file, again using the filename extracted from `url`
+  - Write the file, again using the filename extracted from `--url`
 - Generate the human readable webpage
   - No idea what it should look like yet, but it should include a link to the latest changelog for each package
-  - And of course it links to the generated listing json, using the `url` option
+  - And of course it links to the generated listing json, using the `--url` option
   - It may include a button for "Add to VCC"... but honestly I think that's dumb. The user should just copy the url to the listing and add it to the VCC themselves.
-  - Write the file, which will actually also use the filename extracted from `url`, except that it'll use a different file extension
+  - Write the file, which will actually also use the filename extracted from `--url`, except that it'll use a different file extension
