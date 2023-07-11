@@ -238,5 +238,56 @@ namespace VPMPublish
 
             changelogEntry = entryMatch.Groups["entry"].Value;
         }
+
+        public static void ValidateListingUrl(string url)
+        {
+            if (!Uri.TryCreate(url, UriKind.Absolute, out var uri)
+                || (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps)
+                || !url.EndsWith(".json"))
+            {
+                throw Util.Abort($"The '--url' must be a http or https url that ends with '.json'. Got {url}");
+            }
+        }
+
+        // https://stackoverflow.com/questions/201323/how-can-i-validate-an-email-address-using-a-regular-expression/201378#201378
+        private static Regex emailRegex = new Regex(@"
+            (?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|\u0022
+            (?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*\u0022)@(?:(?:[a-z0-9]
+            (?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}
+            (?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:
+            (?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])
+        ", RegexOptions.Compiled | RegexOptions.IgnorePatternWhitespace);
+
+        public static void ValidateAuthorEmail(string author)
+        {
+            if (!emailRegex.IsMatch(author))
+                throw Util.Abort($"The given email {author} is not a valid email address.");
+        }
+
+        public static void ValidateListingOutputDir(string dir)
+        {
+            if (!Directory.Exists(dir))
+                throw Util.Abort(new DirectoryNotFoundException(
+                    $"The given listing output directory does not exist: {dir}"
+                ));
+        }
+
+        public static void ValidatePackageDir(string packageDir)
+        {
+            if (!Directory.Exists(packageDir))
+                throw Util.Abort(new DirectoryNotFoundException(
+                    $"The given package directory does not exist: {packageDir}"
+                ));
+
+            string packageJsonPath = Path.Combine(packageDir, "package.json");
+            if (!File.Exists(packageJsonPath))
+                throw Util.Abort(new FileNotFoundException(
+                    $"The given package directory does not contain a package.json file: {packageDir}",
+                    packageJsonPath
+                ));
+
+            if (!Directory.Exists(Path.Combine(packageDir, ".git")))
+                throw Util.Abort($"The given package directory does not have a git repository: {packageDir}");
+        }
     }
 }

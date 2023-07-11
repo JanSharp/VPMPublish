@@ -31,6 +31,11 @@ namespace VPMPublish
             try
             {
                 Validation.EnsureCommandAvailability();
+                Validation.ValidateListingUrl(url);
+                Validation.ValidateAuthorEmail(author);
+                Validation.ValidateListingOutputDir(outputDir);
+                foreach (string package in packages)
+                    Validation.ValidatePackageDir(package);
             }
             catch (Exception e)
             {
