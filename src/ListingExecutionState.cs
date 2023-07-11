@@ -86,7 +86,8 @@ namespace VPMPublish
 
         private void LoadTags(PackageData package)
         {
-            Util.Info($"Loading tags and their respective version of the package.json for package '{package.name}'.");
+            Util.Info($"Loading tags, the zip sha256 checksum saved in the tag message "
+                + $"and their respective version of the package.json for package '{package.name}'.");
 
             Util.SetChildProcessWorkingDirectory(package.dir);
 
@@ -104,7 +105,10 @@ namespace VPMPublish
                     "--format=%(contents)"
                 ));
                 if (!Util.TryGetChecksumFromTagMessage(tagMessage, out string checksum))
+                {
+                    Util.Info($"Found tag {tag}, but it does not contain the zip checksum in the tag message. Ignoring this tag.");
                     continue;
+                }
 
                 string packageJsonStr = string.Join('\n', Util.RunProcess(
                     "git",
@@ -124,8 +128,8 @@ namespace VPMPublish
                     );
 
                 packageJson.ZipSHA256 = checksum;
-
                 package.versions.Add(new PackageVersion(packageJson, versionStr, version));
+                Util.Info($"Loaded {versionStr}");
             }
         }
 
