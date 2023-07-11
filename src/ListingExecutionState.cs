@@ -1,5 +1,6 @@
 using Semver;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace VPMPublish
 {
@@ -70,6 +71,7 @@ namespace VPMPublish
                     Validation.ValidatePackageDir(package.dir);
                 foreach (PackageData package in packages)
                     LoadTags(package);
+                GenerateListingJson();
             }
             catch (Exception e)
             {
@@ -113,6 +115,8 @@ namespace VPMPublish
                 if (packageJson == null)
                     throw Util.Abort("Invalid package.json... I don't have an error message to pass along.");
 
+                Validation.ValidatePackageJson(package.dir, packageJson, out _, silent: true);
+
                 if (packageJson.Version != versionStr)
                     throw Util.Abort($"The package.json for the tag {tag} has the version {packageJson.Version}, "
                         + $"which is a mismatch. Generally this shouldn't be possible when using just this tool, "
@@ -123,6 +127,32 @@ namespace VPMPublish
 
                 package.versions.Add(new PackageVersion(packageJson, versionStr, version));
             }
+        }
+
+        private void GenerateListingJson()
+        {
+            string outputFilename = Path.Combine(outputDir, Path.GetFileName(url));
+            Util.Info($"Generating VCC listing json file at {outputFilename}");
+
+            VCCListingJson listing = new VCCListingJson(
+                name,
+                id,
+                url,
+                author,
+                packages.ToDictionary(
+                    p => p.name,
+                    p => new VCCListingJson.PackageVersionsJson(
+                        p.versions.ToDictionary(v => v.versionStr, v => v.json)
+                    )
+                )
+            );
+
+            using FileStream fileStream = File.OpenWrite(outputFilename);
+            JsonSerializer.Serialize(fileStream, listing!, new JsonSerializerOptions()
+            {
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+            });
+            fileStream.Close();
         }
     }
 }

@@ -100,9 +100,10 @@ namespace VPMPublish
             @"^https://github\.com/(?<user>[^/]+)/(?<repo>[^/]+)/"
                 + @"blob/v(?<version>[^/]+)/CHANGELOG\.md$", RegexOptions.Compiled);
 
-        public static void ValidatePackageJson(string packageRoot, PackageJson packageJson, out SemVersion version)
+        public static void ValidatePackageJson(string packageRoot, PackageJson packageJson, out SemVersion version, bool silent = false)
         {
-            Util.Info("Validating the name, version, url and changelogUrl in the package.json.");
+            if (!silent)
+                Util.Info("Validating the name, version, url and changelogUrl in the package.json.");
 
             string packageName = packageJson.Name;
             string packageVersion = packageJson.Version;
