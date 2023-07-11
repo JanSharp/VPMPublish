@@ -83,7 +83,7 @@ Why? you might ask. Because the order of fields is fixed when serializing, so th
       - Filter them to only keep the ones where the part after `v` is a valid SemVer version
       - Extract the sha256 checksum from the annotated git tag
         - If it doesn't have the sha256 checksum in the tag, forget about that version
-    - Use `git show vx.x.x:package.json` to load the `package.json` for every version of the package
+    - Use `git show refs/tags/vx.x.x:package.json` to load the `package.json` for every version of the package
       - Validate the retrieved `package.json`, using the same validation as publish
       - Validate that the version matches the tag version, otherwise abort
       - Add the `zipSHA256` field, using the extracted checksum from the git tag

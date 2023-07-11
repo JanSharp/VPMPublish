@@ -270,7 +270,7 @@ namespace VPMPublish
                 "git",
                 "tag",
                 "--annotate",
-                $"--message=(zip package sha256 checksum: {sha256Checksum})",
+                $"--message={Util.FormatChecksumForTagMessage(sha256Checksum!)}",
                 $"v{packageJson!.Version}"
             );
         }

@@ -12,8 +12,12 @@
       // If you have changed target frameworks, make sure to update the program path.
       "program": "${workspaceFolder}/bin/Debug/net7.0/VPMPublish.dll",
       "args": [
-        "normalize-package-json",
-        "--package-root",
+        "generate-vcc-listing",
+        "--name", "JanSharp Dummy Packages",
+        "--id", "com.jansharp.dummy",
+        "--url", "https://jansharp.github.io/dummyvcclisting.json",
+        "--author", "steinmeister36@gmail.com",
+        "--out-dir", "/mnt/big/temp/dummy-vcc-listing",
         "/mnt/big/dev/unity/DummyCustomVPMPackage/Packages/com.jansharp.dummy",
       ],
       "cwd": "${workspaceFolder}",

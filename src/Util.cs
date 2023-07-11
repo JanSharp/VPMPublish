@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace VPMPublish
 {
@@ -87,6 +88,23 @@ namespace VPMPublish
         public static List<string> RunProcess(string fileName, params string[] args)
         {
             return CheckRunProcess(null, fileName, args);
+        }
+
+        public static string FormatChecksumForTagMessage(string sha256Checksum)
+        {
+            return $"(zip package sha256 checksum: {sha256Checksum})";
+        }
+
+        // I honestly couldn't tell you why a sha256 checksum is 32 bytes, but it is, and I'm not looking up why.
+        private static Regex checksumInTagRegex = new Regex(
+            @"\(zip package sha256 checksum: (?<checksum>[0-9a-zA-Z]{64})\)",
+            RegexOptions.Compiled);
+
+        public static bool TryGetChecksumFromTagMessage(string tagMessage, out string sha256Checksum)
+        {
+            Match match = checksumInTagRegex.Match(tagMessage);
+            sha256Checksum = match.Success ? match.Groups["checksum"].Value : "";
+            return match.Success;
         }
     }
 }
