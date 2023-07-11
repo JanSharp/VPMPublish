@@ -49,6 +49,38 @@ namespace VPMPublish
 
             normalizePackageJsonCommand.SetHandler(NormalizePackageJson, packageRootOption);
 
+            var generateVCCListing = new Command("generate-vcc-listing", "Generate the vcc listing and a human readable webpage. (Does not upload anything.)");
+            rootCommand.AddCommand(generateVCCListing);
+
+            var nameOption = new Option<string>("--name", "The human readable name of the VCC Listing.");
+            var idOption = new Option<string>("--id", "The internal id of the VCC Listing, in the form of 'com.<company or user>.<some name>', all lowercase.");
+            var urlOption = new Option<string>("--url", "The full url to the resulting vcc listing json file, for example https://jansharp.github.io/dummyvcclisting.json.");
+            var authorOption = new Option<string>("--author", "The email address of the author for this listing.");
+            var outputDirOption = new Option<string>("--out-dir", "The directory the json file and the webpage file will be written to.");
+            var packagesArg = new Argument<string[]>("packages", "Paths to all the packages included in this listing.");
+            nameOption.IsRequired = true;
+            idOption.IsRequired = true;
+            urlOption.IsRequired = true;
+            authorOption.IsRequired = true;
+            outputDirOption.IsRequired = true;
+
+            generateVCCListing.Add(nameOption);
+            generateVCCListing.Add(idOption);
+            generateVCCListing.Add(urlOption);
+            generateVCCListing.Add(authorOption);
+            generateVCCListing.Add(outputDirOption);
+            generateVCCListing.Add(packagesArg);
+
+            generateVCCListing.SetHandler(
+                GenerateVCCListing,
+                nameOption,
+                idOption,
+                urlOption,
+                authorOption,
+                outputDirOption,
+                packagesArg
+            );
+
             int libExitCode = await rootCommand.InvokeAsync(args);
             return libExitCode != 0 ? libExitCode : exitCode;
         }
@@ -69,6 +101,17 @@ namespace VPMPublish
         {
             var context = new ExecutionState(packageRoot, "main", false);
             exitCode = context.NormalizePackageJson();
+        }
+
+        private static void GenerateVCCListing(
+            string nameOption,
+            string idOption,
+            string urlOption,
+            string authorOption,
+            string outputDirOption,
+            string[] packagesArg)
+        {
+            // TODO: impl
         }
     }
 }
