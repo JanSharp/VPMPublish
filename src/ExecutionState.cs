@@ -659,6 +659,11 @@ namespace VPMPublish
             RegexOptions.Compiled | RegexOptions.RightToLeft
         );
 
+        private static Regex newlineRegex = new Regex(
+            @"(?:\r\n|\r|\n)",
+            RegexOptions.Compiled
+        );
+
         private void GenerateChangelogDraft()
         {
             Info($"Generating changelog entry for `v{packageJson!.Version}`.");
@@ -666,6 +671,8 @@ namespace VPMPublish
             string part1 = "";
             string part2 = "";
             string? lastVersion = null;
+
+            string lf = "\n";
 
             if (wholeChangelog != null)
             {
@@ -690,6 +697,14 @@ namespace VPMPublish
 
                 part1 = wholeChangelog.Substring(firstPosition, secondPosition - firstPosition);
                 part2 = wholeChangelog.Substring(secondPosition);
+
+                // Find most commonly used new line.
+                lf = newlineRegex.Matches(wholeChangelog)
+                    .Select(m => m.Value)
+                    .GroupBy(c => c)
+                    .OrderByDescending(g => g.Count())
+                    .Select(g => g.Key)
+                    .FirstOrDefault("\n");
             }
 
             Match urlMatch = packageUrlRegex.Match(packageJson!.Url);
@@ -703,28 +718,28 @@ namespace VPMPublish
                 ? RunProcess("git", "log", $"v{lastVersion}..HEAD", logFormat)
                 : RunProcess("git", "log", logFormat);
 
-            wholeChangelog = $"\n"
-                + $"# Changelog\n"
-                + $"\n"
-                + $"## [{packageJson.Version}] - {currentDateStr}\n"
-                + $"\n"
+            wholeChangelog = lf
+                + $"# Changelog" + lf
+                + lf
+                + $"## [{packageJson.Version}] - {currentDateStr}" + lf
+                + lf
                 + $"_//" + $" TODO: Arrange the changes their appropriate categories, combine them, "
-                + $"or remove them. Use https://common-changelog.org for reference._\n"
-                + $"\n"
-                + $"### Temp Draft\n"
-                + $"\n"
-                + string.Join('\n', log) + $"\n"
-                + $"\n"
-                + $"### Changed\n"
-                + $"\n"
-                + $"### Added\n"
-                + $"\n"
-                + $"### Removed\n"
-                + $"\n"
-                + $"### Fixed\n"
-                + $"\n"
+                + $"or remove them. Use https://common-changelog.org for reference._" + lf
+                + lf
+                + $"### Temp Draft" + lf
+                + lf
+                + string.Join(lf, log) + lf
+                + lf
+                + $"### Changed" + lf
+                + lf
+                + $"### Added" + lf
+                + lf
+                + $"### Removed" + lf
+                + lf
+                + $"### Fixed" + lf
+                + lf
                 + part1
-                + $"[{packageJson.Version}]: https://github.com/{user}/{repo}/releases/tag/v{packageJson.Version}\n"
+                + $"[{packageJson.Version}]: https://github.com/{user}/{repo}/releases/tag/v{packageJson.Version}" + lf
                 + part2;
 
             File.WriteAllText(Path.Combine(packageRoot, "CHANGELOG.md"), wholeChangelog);
