@@ -131,6 +131,9 @@ namespace VPMPublish
                 package.versions.Add(new PackageVersion(packageJson, versionStr, version));
                 Util.Info($"Loaded {versionStr}");
             }
+
+            if (!package.versions.Any())
+                throw Util.Abort($"Could not load any tags and their versions for the package '{package.name}'.");
         }
 
         private void GenerateListingJson()
