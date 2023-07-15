@@ -28,13 +28,20 @@ namespace VPMPublish
             publishCommand.Add(packageRootOption);
             publishCommand.Add(mainBranchNameOption);
 
+            var humanReadableListingUrlOption = new Option<string>(
+                "--listing-url",
+                "The _human readable_ listing url, used in the generated release notes."
+            );
+            humanReadableListingUrlOption.IsRequired = true;
+            publishCommand.Add(humanReadableListingUrlOption);
+
             var validateOnlyOption = new Option<bool>(
                 "--validate-only",
                 "When set, only runs all validation steps, but won't actually perform any publish steps."
             );
             publishCommand.Add(validateOnlyOption);
 
-            publishCommand.SetHandler(Publish, packageRootOption, mainBranchNameOption, validateOnlyOption);
+            publishCommand.SetHandler(Publish, packageRootOption, mainBranchNameOption, humanReadableListingUrlOption, validateOnlyOption);
 
             var changelogDraftCommand = new Command("changelog-draft", "Generate a changelog draft for the current version.");
             rootCommand.AddCommand(changelogDraftCommand);
@@ -87,21 +94,21 @@ namespace VPMPublish
             return libExitCode != 0 ? libExitCode : exitCode;
         }
 
-        private static void Publish(string packageRoot, string mainBranch, bool validateOnly)
+        private static void Publish(string packageRoot, string mainBranch, string listingUrl, bool validateOnly)
         {
-            var context = new ExecutionState(packageRoot, mainBranch, validateOnly);
+            var context = new ExecutionState(packageRoot, mainBranch, listingUrl, validateOnly);
             exitCode = context.Publish();
         }
 
         private static void ChangelogDraft(string packageRoot, string mainBranch)
         {
-            var context = new ExecutionState(packageRoot, mainBranch, false);
+            var context = new ExecutionState(packageRoot, mainBranch);
             exitCode = context.ChangelogDraft();
         }
 
         private static void NormalizePackageJson(string packageRoot)
         {
-            var context = new ExecutionState(packageRoot, "main", false);
+            var context = new ExecutionState(packageRoot, "main");
             exitCode = context.NormalizePackageJson();
         }
 

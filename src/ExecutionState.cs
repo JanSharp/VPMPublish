@@ -12,6 +12,7 @@ namespace VPMPublish
     {
         private string packageRoot;
         private string mainBranch;
+        private string? listingUrl;
         private bool validateOnly;
         ///<summary>
         ///Since time is passing during the execution of this program,
@@ -32,10 +33,11 @@ namespace VPMPublish
         private ZipArchive? packageArchive;
         private string? sha256Checksum;
 
-        public ExecutionState(string packageRoot, string mainBranch, bool validateOnly)
+        public ExecutionState(string packageRoot, string mainBranch, string? listingUrl = null, bool validateOnly = false)
         {
             this.packageRoot = packageRoot;
             this.mainBranch = mainBranch;
+            this.listingUrl = listingUrl;
             this.validateOnly = validateOnly;
             currentDateStr = DateTime.UtcNow.ToString("yyyy-MM-dd");
         }
@@ -246,7 +248,9 @@ namespace VPMPublish
             Util.Info("Generating release notes for the GitHub release.");
 
             var file = File.CreateText(releaseNotesFileName!);
-            file.WriteLine("// TODO: Link to human readable listing page here.");
+            file.WriteLine("# Installing");
+            file.WriteLine();
+            file.WriteLine($"Go to the [VCC Listing]({listingUrl}) page and follow the instructions there.");
             file.WriteLine();
             file.WriteLine("# Changelog");
             file.WriteLine();
