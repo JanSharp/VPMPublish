@@ -261,8 +261,14 @@ namespace VPMPublish
 
         public static void ValidateAuthorEmail(string author)
         {
+            // Apparently this is allowed to be any string, so this validation probably shouldn't exist.
             if (!emailRegex.IsMatch(author))
-                throw Util.Abort($"The given email {author} is not a valid email address.");
+            {
+                Util.Info($"The given email {author} is not a valid email address. Apparently this is fine, "
+                    + $"even though the example repo listing on the docs uses an email address. There's no "
+                    + $"actual documentation for this, so do with this information as you wish."
+                );
+            }
         }
 
         public static void ValidateListingOutputDir(string dir)
