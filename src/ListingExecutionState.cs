@@ -72,6 +72,7 @@ namespace VPMPublish
                 foreach (PackageData package in packages)
                     LoadTags(package);
                 GenerateListingJson();
+                GenerateLatestVersionsJson();
             }
             catch (Exception e)
             {
@@ -154,11 +155,29 @@ namespace VPMPublish
                 )
             );
 
+            // TODO: this is not overwriting the file properly, it's only overwriting the parts
+            // it's writing to. if the new file is shorter, the rest of the old file remains.
+
             using FileStream fileStream = File.OpenWrite(outputFilename);
             JsonSerializer.Serialize(fileStream, listing!, new JsonSerializerOptions()
             {
                 DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
             });
+            fileStream.Close();
+        }
+
+        private void GenerateLatestVersionsJson()
+        {
+            string outputFilename = Path.Combine(outputDir, Path.GetFileNameWithoutExtension(url) + ".latest.json");
+            Util.Info($"Generating latest versions file at {outputFilename}");
+
+            Dictionary<string, string> mapping = packages.ToDictionary(
+                p => p.name,
+                p => p.versions.OrderByDescending(v => v.version).First().versionStr
+            );
+
+            using FileStream fileStream = File.OpenWrite(outputFilename);
+            JsonSerializer.Serialize(fileStream, mapping);
             fileStream.Close();
         }
     }
