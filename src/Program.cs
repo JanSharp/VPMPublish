@@ -63,7 +63,8 @@ namespace VPMPublish
             var nameOption = new Option<string>("--name", "The human readable name of the VCC Listing.");
             var idOption = new Option<string>("--id", "The internal id of the VCC Listing. The format this is supposed to follow is unknown, "
                 + "but my guess is this: https://docs.unity3d.com/2019.4/Documentation/Manual/cus-naming.html. For example 'com.jansharp.dummy'.");
-            var urlOption = new Option<string>("--url", "The full url to the resulting vcc listing json file, for example https://jansharp.github.io/dummyvcclisting.json.");
+            var urlOption = new Option<string>("--url", "The full url to the resulting vcc listing json file, for example"
+                + "https://gist.github.com/JanSharp/gisthashhere/dummyvcclisting.json. The filename at the end is also used as the filename in the output dir.");
             var authorOption = new Option<string>("--author", "The email address of the author for this listing.");
             var outputDirOption = new Option<string>("--out-dir", "The directory the json file and the webpage file will be written to.");
             var packagesArg = new Argument<string[]>("packages", "Paths to all the packages included in this listing.");
@@ -80,6 +81,10 @@ namespace VPMPublish
             generateVCCListing.Add(outputDirOption);
             generateVCCListing.Add(packagesArg);
 
+            var omitLatestJsonOption = new Option<bool>("--omit-latest", "Omit the .latest.json file that gets generated along side the listing? "
+                + "Useful when making your own webpage, not using the template (see readme).");
+            generateVCCListing.Add(omitLatestJsonOption);
+
             generateVCCListing.SetHandler(
                 GenerateVCCListing,
                 nameOption,
@@ -87,6 +92,7 @@ namespace VPMPublish
                 urlOption,
                 authorOption,
                 outputDirOption,
+                omitLatestJsonOption,
                 packagesArg
             );
 
@@ -118,6 +124,7 @@ namespace VPMPublish
             string url,
             string author,
             string outputDir,
+            bool omitLatestJson,
             string[] packages)
         {
             var context = new ListingExecutionState(
@@ -126,6 +133,7 @@ namespace VPMPublish
                 url,
                 author,
                 outputDir,
+                omitLatestJson,
                 packages
             );
             exitCode = context.GenerateVCCListing();

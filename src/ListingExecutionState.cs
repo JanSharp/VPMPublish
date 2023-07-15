@@ -12,6 +12,7 @@ namespace VPMPublish
         private string url;
         private string author;
         private string outputDir;
+        private bool omitLatestJson;
         private List<PackageData> packages;
 
         private struct PackageData
@@ -48,6 +49,7 @@ namespace VPMPublish
             string url,
             string author,
             string outputDir,
+            bool omitLatestJson,
             string[] packages)
         {
             this.name = name;
@@ -55,6 +57,7 @@ namespace VPMPublish
             this.url = url;
             this.author = author;
             this.outputDir = outputDir;
+            this.omitLatestJson = omitLatestJson;
             this.packages = packages
                 .Select(p => new PackageData(p, new DirectoryInfo(p).Name))
                 .ToList();
@@ -186,6 +189,11 @@ namespace VPMPublish
         private void GenerateLatestVersionsJson()
         {
             string outputFilename = Path.Combine(outputDir, Path.GetFileNameWithoutExtension(url) + ".latest.json");
+            if (omitLatestJson)
+            {
+                Util.Info($"Skipping generating latest versions file (would have been at {outputFilename}).");
+                return;
+            }
             Util.Info($"Generating latest versions file at {outputFilename}");
 
             Dictionary<string, LatestVersionJson> mapping = packages.ToDictionary(
