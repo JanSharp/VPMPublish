@@ -305,6 +305,7 @@ namespace VPMPublish
                 WriteIndented = true,
                 DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
             });
+            fileStream.SetLength(fileStream.Position);
             fileStream.Close();
         }
 

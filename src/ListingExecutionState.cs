@@ -155,14 +155,12 @@ namespace VPMPublish
                 )
             );
 
-            // TODO: this is not overwriting the file properly, it's only overwriting the parts
-            // it's writing to. if the new file is shorter, the rest of the old file remains.
-
             using FileStream fileStream = File.OpenWrite(outputFilename);
             JsonSerializer.Serialize(fileStream, listing!, new JsonSerializerOptions()
             {
                 DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
             });
+            fileStream.SetLength(fileStream.Position);
             fileStream.Close();
         }
 
@@ -178,6 +176,7 @@ namespace VPMPublish
 
             using FileStream fileStream = File.OpenWrite(outputFilename);
             JsonSerializer.Serialize(fileStream, mapping);
+            fileStream.SetLength(fileStream.Position);
             fileStream.Close();
         }
     }
