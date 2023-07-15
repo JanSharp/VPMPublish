@@ -1,6 +1,7 @@
-using Semver;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
+using Semver;
 
 namespace VPMPublish
 {
@@ -164,14 +165,43 @@ namespace VPMPublish
             fileStream.Close();
         }
 
+        private class LatestVersionJson
+        {
+            [JsonPropertyName("version")]
+            public string Version { get; set; }
+
+            [JsonPropertyName("updateDate")]
+            public string UpdateDate { get; set; }
+
+            [JsonConstructor]
+            public LatestVersionJson(
+                string version,
+                string updateDate)
+            {
+                Version = version;
+                UpdateDate = updateDate;
+            }
+        }
+
         private void GenerateLatestVersionsJson()
         {
             string outputFilename = Path.Combine(outputDir, Path.GetFileNameWithoutExtension(url) + ".latest.json");
             Util.Info($"Generating latest versions file at {outputFilename}");
 
-            Dictionary<string, string> mapping = packages.ToDictionary(
+            Dictionary<string, LatestVersionJson> mapping = packages.ToDictionary(
                 p => p.name,
-                p => p.versions.OrderByDescending(v => v.version).First().versionStr
+                p => {
+                    PackageVersion latest = p.versions.OrderByDescending(v => v.version).First();
+                    ///cSpell:ignore creatordate
+                    string date = DateTime.Parse(Util.RunProcess(
+                        "git",
+                        "for-each-ref",
+                        $"refs/tags/v{latest.versionStr}",
+                        "--count=1",
+                        "--format=%(creatordate:iso-strict)"
+                    ).Single()).ToUniversalTime().ToString("yyyy-MM-ddThh:mm:ss+00:00");
+                    return new LatestVersionJson(latest.versionStr, date);
+                }
             );
 
             using FileStream fileStream = File.OpenWrite(outputFilename);

@@ -92,7 +92,14 @@ Why? you might ask. Because the order of fields is fixed when serializing, so th
   - Use the retrieved `package.json` from every version of every package to build the `packages` object
   - Write the file, again using the filename extracted from `--url`
 - Generate latest versions json file
-  - A simple mapping from the package name to the latest version (string) of that package
+  - All this data is purely used by the human readable webpage
+  - A dictionary
+    - The keys are the package names
+    - The values are an object with the fields:
+      - "version": "x.x.x (string, semver)" - obtained from the git tag or the package json
+        - This removes the need of the semver library for the webpage (more info below)
+      - "updateDate": "yyyy-MM-ddThh:mm:ss+00:00 (string, ISO 8601)" - obtained from the creation time of the git tag
+        - Makes it easy to add a Updated On column to the webpage, including it being sortable
 
 The reason the latest versions json file is created is because it's much easier to use the SemVer package in C# than it is to try and figure out how to use the node js package for semver. Plus it makes the website like literally a fraction of the size, because the library would be way bigger than anything else.
 
