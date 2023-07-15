@@ -66,7 +66,7 @@ Why? you might ask. Because the order of fields is fixed when serializing, so th
 - Validate, using the same validation for name, version, url and changelogUrl as publish
 - Serialize `package.json`
 
-# Generate VCC listing and webpage
+# Generate VCC listing
 
 - Validate
   - Ensure the `git` command is available
@@ -91,8 +91,9 @@ Why? you might ask. Because the order of fields is fixed when serializing, so th
   - Use the `--name`, `--id`, `--url` and `--author` provided as command line options
   - Use the retrieved `package.json` from every version of every package to build the `packages` object
   - Write the file, again using the filename extracted from `--url`
-- Generate the human readable webpage
-  - No idea what it should look like yet, but it should include a link to the latest changelog for each package
-  - And of course it links to the generated listing json, using the `--url` option
-  - It may include a button for "Add to VCC"... but honestly I think that's dumb. The user should just copy the url to the listing and add it to the VCC themselves.
-  - Write the file, which will actually also use the filename extracted from `--url`, except that it'll use a different file extension
+- Generate latest versions json file
+  - A simple mapping from the package name to the latest version (string) of that package
+
+The reason the latest versions json file is created is because it's much easier to use the SemVer package in C# than it is to try and figure out how to use the node js package for semver. Plus it makes the website like literally a fraction of the size, because the library would be way bigger than anything else.
+
+Also note that the website is using the listing json file (and the latest versions json file) to populate itself dynamically, using a bit of js scripting.

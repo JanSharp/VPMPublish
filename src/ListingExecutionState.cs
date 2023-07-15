@@ -72,7 +72,6 @@ namespace VPMPublish
                 foreach (PackageData package in packages)
                     LoadTags(package);
                 GenerateListingJson();
-                GenerateHumanReadableListingPage();
             }
             catch (Exception e)
             {
@@ -158,30 +157,6 @@ namespace VPMPublish
                 DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
             });
             fileStream.Close();
-        }
-
-        private void GenerateHumanReadableListingPage()
-        {
-            string outputFilename = Path.Combine(outputDir, Path.GetFileNameWithoutExtension(url) + ".md");
-            Util.Info($"Generating human readable listing file at {outputFilename}");
-
-            using StreamWriter page = File.CreateText(outputFilename);
-
-            page.WriteLine();
-            page.WriteLine($"# {name}");
-            page.WriteLine();
-            page.WriteLine($"Copy this link to add the packages below to your VCC: {url}");
-            page.WriteLine();
-
-            foreach (PackageData package in packages)
-            {
-                PackageVersion latest = package.versions.OrderByDescending(v => v.version).First();
-                page.WriteLine($"- {latest.json.DisplayName} `{latest.versionStr}` "
-                    + $"(`{latest.json.Name}`) - [Changelog]({latest.json.ChangelogUrl})"
-                );
-            }
-
-            page.Close();
         }
     }
 }
