@@ -47,6 +47,7 @@ To create a github gist for this:
 - Run `git clone <the url you copied from the gist to clone it> VCCListing` where `VCCListing` is the folder name to clone into, so you can call it whatever you want
 - Technically that's it, but it's good to also generate the initial empty listing both for testing this and for testing the webpage
   - Run `vpm-publish generate-vcc-listing` with the appropriate arguments which will fill in the listing metadata (remember, `VPMPublish` on windows, if you've followed the installation steps)
+    - Note that when using github gists, you can get the url to the hosted file by pressing the `raw` button and copying that url, however make sure to remove the second hash from the url. By removing that hash, it will always point to the latest version of that file on the gist, while with that hash it'll always point to that exact version, which is not what we want. Here's an example of the url we want: https://gist.githubusercontent.com/JanSharp/f8e5bf0bc971c99cdbaa59039a1efe4d/raw/dummylisting.json
     - The output directory should be the root of the local clone of the gist you just created 
   - If this succeeds without errors, there should now be valid json file(s) in the output directory
   - With that confirmed
