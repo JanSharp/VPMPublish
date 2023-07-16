@@ -48,7 +48,11 @@ namespace VPMPublish
             changelogDraftCommand.Add(packageRootOption);
             changelogDraftCommand.Add(mainBranchNameOption);
 
-            changelogDraftCommand.SetHandler(ChangelogDraft, packageRootOption, mainBranchNameOption);
+            ///cSpell:ignore uncommited
+            var allowDirtyWorkingTreeOption = new Option<bool>("--allow-dirty", "Allow having a dirty git working tree (having uncommited changes).");
+            changelogDraftCommand.Add(allowDirtyWorkingTreeOption);
+
+            changelogDraftCommand.SetHandler(ChangelogDraft, packageRootOption, mainBranchNameOption, allowDirtyWorkingTreeOption);
 
             var normalizePackageJsonCommand = new Command("normalize-package-json", "Normalize package.json, specifically the order of fields.");
             rootCommand.AddCommand(normalizePackageJsonCommand);
@@ -106,9 +110,9 @@ namespace VPMPublish
             exitCode = context.Publish();
         }
 
-        private static void ChangelogDraft(string packageRoot, string mainBranch)
+        private static void ChangelogDraft(string packageRoot, string mainBranch, bool allowDirtyWorkingTree)
         {
-            var context = new ExecutionState(packageRoot, mainBranch);
+            var context = new ExecutionState(packageRoot, mainBranch, allowDirtyWorkingTree: allowDirtyWorkingTree);
             exitCode = context.ChangelogDraft();
         }
 

@@ -14,6 +14,7 @@ namespace VPMPublish
         private string mainBranch;
         private string? listingUrl;
         private bool validateOnly;
+        private bool allowDirtyWorkingTree;
         ///<summary>
         ///Since time is passing during the execution of this program,
         ///make sure the same date is used throughout all of it.
@@ -33,12 +34,18 @@ namespace VPMPublish
         private ZipArchive? packageArchive;
         private string? sha256Checksum;
 
-        public ExecutionState(string packageRoot, string mainBranch, string? listingUrl = null, bool validateOnly = false)
+        public ExecutionState(
+            string packageRoot,
+            string mainBranch,
+            string? listingUrl = null,
+            bool validateOnly = false,
+            bool allowDirtyWorkingTree = false)
         {
             this.packageRoot = packageRoot;
             this.mainBranch = mainBranch;
             this.listingUrl = listingUrl;
             this.validateOnly = validateOnly;
+            this.allowDirtyWorkingTree = allowDirtyWorkingTree;
             currentDateStr = DateTime.UtcNow.ToString("yyyy-MM-dd");
         }
 
@@ -90,7 +97,8 @@ namespace VPMPublish
                 Validation.EnsureCommandAvailability();
                 Validation.EnsureGitHubCLIIsAuthenticated();
                 Validation.EnsureIsMainBranch(mainBranch);
-                Validation.EnsureCleanWorkingTree();
+                if (!allowDirtyWorkingTree)
+                    Validation.EnsureCleanWorkingTree();
                 LoadPackageJson();
                 Validation.ValidatePackageJson(packageRoot, packageJson!, out version);
                 Validation.EnsureTagDoesNotExist(packageJson!);
