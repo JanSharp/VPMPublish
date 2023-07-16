@@ -170,6 +170,9 @@ namespace VPMPublish
 
         private class LatestVersionJson
         {
+            [JsonPropertyName("name")]
+            public string Name { get; set; }
+
             [JsonPropertyName("version")]
             public string Version { get; set; }
 
@@ -178,9 +181,11 @@ namespace VPMPublish
 
             [JsonConstructor]
             public LatestVersionJson(
+                string name,
                 string version,
                 string updateDate)
             {
+                Name = name;
                 Version = version;
                 UpdateDate = updateDate;
             }
@@ -196,24 +201,28 @@ namespace VPMPublish
             }
             Util.Info($"Generating latest versions file at {outputFilename}");
 
-            Dictionary<string, LatestVersionJson> mapping = packages.ToDictionary(
-                p => p.name,
-                p => {
-                    PackageVersion latest = p.versions.OrderByDescending(v => v.version).First();
+            List<LatestVersionJson> latestList = packages
+                .Select(p => p.versions.OrderByDescending(v => v.version).First())
+                // Sorting by version instead of name, that way the website has a presorted list.
+                // Since parsing and sorting the versions correctly in js would require a library,
+                // but we already have a library here so this is both more efficient and easier.
+                .OrderByDescending(v => v.version)
+                .ThenBy(v => v.json.DisplayName)
+                .Select(v => {
                     ///cSpell:ignore creatordate
                     string date = DateTime.Parse(Util.RunProcess(
                         "git",
                         "for-each-ref",
-                        $"refs/tags/v{latest.versionStr}",
+                        $"refs/tags/v{v.versionStr}",
                         "--count=1",
                         "--format=%(creatordate:iso-strict)"
                     ).Single()).ToUniversalTime().ToString("yyyy-MM-ddThh:mm:ss+00:00");
-                    return new LatestVersionJson(latest.versionStr, date);
-                }
-            );
+                    return new LatestVersionJson(v.json.Name, v.versionStr, date);
+                })
+                .ToList();
 
             using FileStream fileStream = File.OpenWrite(outputFilename);
-            JsonSerializer.Serialize(fileStream, mapping);
+            JsonSerializer.Serialize(fileStream, latestList);
             fileStream.SetLength(fileStream.Position);
             fileStream.Close();
         }
