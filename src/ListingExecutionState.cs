@@ -216,7 +216,7 @@ namespace VPMPublish
                         $"refs/tags/v{v.versionStr}",
                         "--count=1",
                         "--format=%(creatordate:iso-strict)"
-                    ).Single()).ToUniversalTime().ToString("yyyy-MM-ddThh:mm:ss+00:00");
+                    ).Single()).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss+00:00");
                     return new LatestVersionJson(v.json.Name, v.versionStr, date);
                 })
                 .ToList();

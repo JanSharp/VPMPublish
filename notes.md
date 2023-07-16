@@ -97,7 +97,7 @@ Why? you might ask. Because the order of fields is fixed when serializing, so th
     - "name": "com.foo.bar (internal name)" - obtained from the package json
     - "version": "x.x.x (string, semver)" - obtained from the git tag or the package json
       - This removes the need of the semver library for the webpage (more info below)
-    - "updateDate": "yyyy-MM-ddThh:mm:ss+00:00 (string, ISO 8601)" - obtained from the creation time of the git tag
+    - "updateDate": "yyyy-MM-ddTHH:mm:ss+00:00 (string, ISO 8601)" - obtained from the creation time of the git tag
       - Makes it easy to add a Updated On column to the webpage, including it being sortable
   - Sort the array by the version, then by display name
     - By having the list pre sorted by version, the website can sort the list by version too without requiring a semver js library
