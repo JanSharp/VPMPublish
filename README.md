@@ -57,7 +57,32 @@ To create a github gist for this:
 
 ## Creating the webpage
 
-// TODO: Add website templates for the listing.
+To create the webpage, you need some way to host a webpage. If you already have a webpage then adding a listing webpage shouldn't be too difficult, so long as you have a way to use straight xhtml (or html I suppose), css and js files.
+
+When you don't have a webpage yet, you can use [github pages](https://docs.github.com/en/pages). Here's [my github pages repo](https://github.com/JanSharp/jansharp.github.io) for reference.
+
+Now to actually create the webpage you can use the following files as templates from [my github pages repo](https://github.com/JanSharp/jansharp.github.io):
+
+- [docs/styles.css](https://github.com/JanSharp/jansharp.github.io/blob/main/docs/styles.css)
+- [docs/vrc/vcclisting.xhtml](https://github.com/JanSharp/jansharp.github.io/blob/main/docs/vrc/vcclisting.xhtml)
+- [docs/vrc/listing.js](https://github.com/JanSharp/jansharp.github.io/blob/main/docs/vrc/listing.js)
+- Do note that these files are licensed under [MIT](https://github.com/JanSharp/jansharp.github.io/blob/main/LICENSE.txt). Don't worry though, MIT is a super small and very permissive license, you can read it in like 2 minutes. When it says "shall be included" it really does mean just that, you can license whatever you're using these files for however you want (which includes no license file, which is equivalent to all rights reserved, if I got the terms right.)
+
+The only file that _requires_ modification is the vcclisting.xhtml file, we'll get to that last.
+
+The absolute location of those files does not matter, they only expect to be relative to each other in that hierarchy, with the `vrc` folder. However you are free to change that hierarchy, just make sure to update references in the `vcclisting.xhtml` file.
+
+You can of course modify styles.css however you want, and change the layout in the vcclisting.xhtml file however you want. The listing.js file does expect several `id`s to exist however.
+
+**Required modification of the template:**
+
+The only file that requires modification is `vcclisting.xhtml`
+
+- Change or remove the favicon link
+- Change the `<title>` of the page to the display name you'd like to use for your VCC listing
+- Change the `var listingUrl = [...];` line to point to the listing file you're hosting
+- Change or remove the link to `Home`
+- Change the first `<h1>` header, which makes the most sense imo to be the same as the page title, aka the display name of your VCC listing
 
 # Creating a new VPM Package
 
