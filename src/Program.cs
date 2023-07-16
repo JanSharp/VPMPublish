@@ -65,7 +65,7 @@ namespace VPMPublish
                 + "but my guess is this: https://docs.unity3d.com/2019.4/Documentation/Manual/cus-naming.html. For example 'com.jansharp.dummy'.");
             var urlOption = new Option<string>("--url", "The full url to the resulting vcc listing json file, for example"
                 + "https://gist.github.com/JanSharp/gisthashhere/dummyvcclisting.json. The filename at the end is also used as the filename in the output dir.");
-            var authorOption = new Option<string>("--author", "The email address of the author for this listing.");
+            var authorOption = new Option<string>("--author", "The name of the author for this listing. Could be anything, but you can use an email if you want.");
             var outputDirOption = new Option<string>("--out-dir", "The directory the json file and the webpage file will be written to.");
             var packagesArg = new Argument<string[]>("packages", "Paths to all the packages included in this listing.");
             nameOption.IsRequired = true;
