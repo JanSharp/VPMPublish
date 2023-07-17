@@ -202,22 +202,23 @@ namespace VPMPublish
             Util.Info($"Generating latest versions file at {outputFilename}");
 
             List<LatestVersionJson> latestList = packages
-                .Select(p => p.versions.OrderByDescending(v => v.version).First())
+                .Select(p => (package: p, versionInfo: p.versions.OrderByDescending(v => v.version).First()))
                 // Sorting by version instead of name, that way the website has a presorted list.
                 // Since parsing and sorting the versions correctly in js would require a library,
                 // but we already have a library here so this is both more efficient and easier.
-                .OrderByDescending(v => v.version)
-                .ThenBy(v => v.json.DisplayName)
+                .OrderByDescending(v => v.versionInfo.version)
+                .ThenBy(v => v.versionInfo.json.DisplayName)
                 .Select(v => {
                     ///cSpell:ignore creatordate
+                    Util.SetChildProcessWorkingDirectory(v.package.dir);
                     string date = DateTime.Parse(Util.RunProcess(
                         "git",
                         "for-each-ref",
-                        $"refs/tags/v{v.versionStr}",
+                        $"refs/tags/v{v.versionInfo.versionStr}",
                         "--count=1",
                         "--format=%(creatordate:iso-strict)"
                     ).Single()).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss+00:00");
-                    return new LatestVersionJson(v.json.Name, v.versionStr, date);
+                    return new LatestVersionJson(v.versionInfo.json.Name, v.versionInfo.versionStr, date);
                 })
                 .ToList();
 
