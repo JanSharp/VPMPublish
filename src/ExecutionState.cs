@@ -316,6 +316,12 @@ namespace VPMPublish
             {
                 WriteIndented = true,
                 DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+                // Since the package.json file in the project itself is known to be a json file,
+                // and is human readable, this should not be of concern. It only really matters for
+                // < and > in regards to semantic version ranges.
+                // When generating the listing, it will escape those characters in strings,
+                // because that part is not going through this code path here.
+                Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
             });
             fileStream.SetLength(fileStream.Position);
             fileStream.Close();
