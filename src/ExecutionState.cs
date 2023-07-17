@@ -424,8 +424,12 @@ namespace VPMPublish
 
             string logFormat = $"--pretty=- %s ([`%h`](https://github.com/{user}/{repo}/commit/%H))";
 
+            // The "--" at the end tells git that the part after log is the revision, not a file path
+            // This only matters when the tag it's trying to use here doesn't exist, that way it gives
+            // a proper and useful error message
+
             List<string> log = wholeChangelog != null
-                ? Util.RunProcess("git", "log", $"v{lastVersion}..HEAD", logFormat)
+                ? Util.RunProcess("git", "log", $"v{lastVersion}..HEAD", logFormat, "--")
                 : Util.RunProcess("git", "log", logFormat);
 
             wholeChangelog = lf
