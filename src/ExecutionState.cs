@@ -464,7 +464,7 @@ namespace VPMPublish
 
             File.WriteAllText(Path.Combine(packageRoot, "CHANGELOG.md"), wholeChangelog);
 
-            Util.Info($"Use the commit message: Update changelog for v`{packageJson.Version}`");
+            Util.Info($"Use the commit message: Update changelog for `v{packageJson.Version}`");
         }
     }
 }
