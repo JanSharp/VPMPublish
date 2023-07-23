@@ -390,8 +390,12 @@ namespace VPMPublish
 
             string lf = "\n";
 
+            // Doing this weird dance with the boolean in order for C# to be aware that
+            // wholeChangelog is indeed not null inside of the if block without adding ! everywhere
+            bool modifyingExistingChangelog = false;
             if (wholeChangelog != null)
             {
+                modifyingExistingChangelog = true;
                 Match changelogMatch = changelogEntryRegex.Match(wholeChangelog);
                 Match firstMatch = findFirstInsertLocationRegex.Match(wholeChangelog);
                 Match secondMatch = findSecondInsertLocationRegex.Match(wholeChangelog);
@@ -434,7 +438,7 @@ namespace VPMPublish
             // This only matters when the tag it's trying to use here doesn't exist, that way it gives
             // a proper and useful error message
 
-            List<string> log = wholeChangelog != null
+            List<string> log = modifyingExistingChangelog
                 ? Util.RunProcess("git", "log", $"v{lastVersion}..HEAD", logFormat, "--")
                 : Util.RunProcess("git", "log", logFormat);
 
@@ -464,7 +468,7 @@ namespace VPMPublish
 
             File.WriteAllText(Path.Combine(packageRoot, "CHANGELOG.md"), wholeChangelog);
 
-            Util.Info($"Use the commit message: Update changelog for `v{packageJson.Version}`");
+            Util.Info($"Use the commit message: {(modifyingExistingChangelog ? "Update" : "Add")} changelog for `v{packageJson.Version}`");
         }
     }
 }
