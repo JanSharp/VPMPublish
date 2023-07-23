@@ -121,6 +121,21 @@ The only file that requires modification is `vcclisting.xhtml`
   - I'd generally recommend to run `git config --local core.autocrlf false` for unity projects
 - Make a bunch of git commits in the process of working on the project, as per usual
 
+## Ignoring files when packaging
+
+The following files are excluded by default (and cannot be included):
+
+- `.gitignore`
+- `.gitkeep`
+- `.vpmignore`
+- `.git` (file or folder, it gets excluded entirely)
+
+You can add a `.vpmignore` file at the root of the project to specify file globs which should be excluded when creating a vpm package zip file. All specified globs are relative to the root of the package. Empty lines are ignored. Lines starting with `#` are ignored. You can only exclude, including files once they are excluded isn't possible. In general, the globs are very similar to those in `.gitignore`, however unfortunately I cannot tell you how exactly they work because the program is using the [Microsoft.Extensions.FileSystemGlobbing](https://www.nuget.org/packages/Microsoft.Extensions.FileSystemGlobbing/8.0.0-preview.6.23329.7) package, and the best documentation I found so far is this [here](https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.filesystemglobbing.matcher?view=dotnet-plat-ext-7.0#remarks). Also, unlike `.gitignore`, you can only have a `.vpmignore` file in the root of the project, not any additional ones in sub folders. And a keep variant also doesn't exist.
+
+**Important:** The globs are matching _files_, not directories. If you want to exclude all files in a directory, use `my/dir/**/*`.
+
+**Important:** Make sure to also exclude the `.meta` file for every excluded file. Chances are high that you'll just be duplicating lines and adding `.meta` to them.
+
 ## Notes for new projects
 
 - Do _not_ create a `CHANGELOG.md` file, it will be created when the first release happens.

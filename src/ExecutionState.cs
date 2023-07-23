@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
+using Microsoft.Extensions.FileSystemGlobbing;
 using Semver;
 
 namespace VPMPublish
@@ -221,6 +222,25 @@ namespace VPMPublish
         {
             Util.Info("Adding all files from the package to the zip archive (file).");
 
+            string ignorePath = Path.Combine(packageRoot, ".vpmignore");
+            bool hasIgnoreFile = File.Exists(ignorePath);
+
+            Matcher globMatcher = new Matcher();
+            // Include everything by default. Otherwise it would just always return false when calling Match,
+            // since all other globs are excludes, not includes.
+            globMatcher.AddInclude("**/*");
+            if (hasIgnoreFile)
+            {
+                // I tried using both `AddInclude` and `AddExclude` here to allow including files
+                // that were excluded previously, however it seems like the way it works is that
+                // it first checks if the files are included and then checks if they are excluded,
+                // not going by the order in which the globs were added.
+                // (AddInclude would be indicated by a leading `!` in the glob, just for the record.)
+                globMatcher.AddExcludePatterns(File.ReadLines(ignorePath)
+                    .Where(l => !l.StartsWith("#") && !string.IsNullOrWhiteSpace(l))
+                    .Select(l => l.Trim()));
+            }
+
             string Combine(string left, string right) => left == "" ? right : left + "/" + right;
 
             void Walk(DirectoryInfo currentDirectory, string currentRelativeName)
@@ -228,6 +248,15 @@ namespace VPMPublish
                 foreach (FileInfo fileInfo in currentDirectory.EnumerateFiles())
                 {
                     string entryName = Combine(currentRelativeName, fileInfo.Name);
+                    if (fileInfo.Name == ".gitignore"
+                        || fileInfo.Name == ".gitkeep"
+                        || fileInfo.Name == ".git"
+                        || fileInfo.Name == ".vpmignore"
+                        // Without the `"/" +` it was just not matching anything, period. Idk why.
+                        || (hasIgnoreFile && !globMatcher.Match("/", "/" + entryName).HasMatches))
+                    {
+                        continue;
+                    }
                     packageArchive!.CreateEntryFromFile(fileInfo.FullName, entryName);
                 }
                 foreach (DirectoryInfo dirInfo in currentDirectory.EnumerateDirectories())
