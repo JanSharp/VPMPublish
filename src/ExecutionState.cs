@@ -409,6 +409,15 @@ namespace VPMPublish
             RegexOptions.Compiled
         );
 
+        private static Regex logFormatterRegex = new Regex(@"
+            (?:
+                # The below must use a positive lookahead group. A negative one would match the end of the string which is undesired.
+                (?<body>^(?=[^-\ ])) # Any line starting with a non space or - character is an entry in the body which requires indentation and a -.
+                | (?<indent>^(?=\ )) # Any line starting with blank space is a description for a body entry and requires indentation.
+                | (?<empty>(?:\r\n|\r|\n){2,}) # Empty lines originate from the added new line for each entry and possibly inside of the body. They get removed.
+            )
+        ", RegexOptions.Compiled | RegexOptions.IgnorePatternWhitespace | RegexOptions.Multiline);
+
         private void GenerateChangelogDraft()
         {
             Util.Info($"Generating changelog entry for `v{packageJson!.Version}`.");
@@ -461,15 +470,23 @@ namespace VPMPublish
             string user = urlMatch.Groups["user"].Value;
             string repo = urlMatch.Groups["repo"].Value;
 
-            string logFormat = $"--pretty=- %s ([`%h`](https://github.com/{user}/{repo}/commit/%H))";
+            string logFormat = $"--pretty=- %s ([`%h`](https://github.com/{user}/{repo}/commit/%H))%n%b";
 
             // The "--" at the end tells git that the part after log is the revision, not a file path
             // This only matters when the tag it's trying to use here doesn't exist, that way it gives
             // a proper and useful error message
 
-            List<string> log = modifyingExistingChangelog
+            List<string> logLines = modifyingExistingChangelog
                 ? Util.RunProcess("git", "log", $"v{lastVersion}..HEAD", logFormat, "--")
                 : Util.RunProcess("git", "log", logFormat);
+
+            string logStr = logFormatterRegex.Replace(string.Join(lf, logLines), match => {
+                if (match.Groups["body"].Success)
+                    return "  - ";
+                if (match.Groups["indent"].Success)
+                    return "  ";
+                return lf; // Otherwise it's empty lines.
+            });
 
             wholeChangelog = lf
                 + $"# Changelog" + lf
@@ -477,11 +494,13 @@ namespace VPMPublish
                 + $"## [{packageJson.Version}] - {currentDateStr}" + lf
                 + lf
                 + $"_//" + $" TODO: Arrange the changes their appropriate categories, combine them, "
-                + $"or remove them. Use https://common-changelog.org for reference._" + lf
+                + $"or remove them. Use https://common-changelog.org for reference. For example, "
+                + $"the **indented list entries** for commit message bodies are **malformed**, "
+                + $"they are only included to more easily tell what happened in the commits._" + lf
                 + lf
                 + $"### Temp Draft" + lf
                 + lf
-                + string.Join(lf, log) + lf
+                + logStr // Already has a trailing newline.
                 + lf
                 + $"### Changed" + lf
                 + lf

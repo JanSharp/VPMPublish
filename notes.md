@@ -57,6 +57,7 @@
 - generate draft
   - add new entry at the top with the version from the package.json, and the current UTC date
   - use git log to generate a changelog draft
+    - include commit message bodies, even though it results in a further malformed draft, in order to easily see what happened in commits
 
 # Normalize package.json
 
