@@ -56,8 +56,11 @@
 
 - generate draft
   - add new entry at the top with the version from the package.json, and the current UTC date
+    - add link for the new entry at the bottom of the file
   - use git log to generate a changelog draft
     - include commit message bodies, even though it results in a further malformed draft, in order to easily see what happened in commits
+  - auto detect which kind of newline is used in the changelog file and use said newline for all additions
+  - print a suggested commit message to the console/terminal
 
 # Normalize package.json
 
