@@ -66,7 +66,7 @@ Now to actually create the webpage you can use the following files as templates 
 - [docs/styles.css](https://github.com/JanSharp/jansharp.github.io/blob/main/docs/styles.css)
 - [docs/vrc/vcclisting.xhtml](https://github.com/JanSharp/jansharp.github.io/blob/main/docs/vrc/vcclisting.xhtml)
 - [docs/vrc/listing.js](https://github.com/JanSharp/jansharp.github.io/blob/main/docs/vrc/listing.js)
-- Do note that these files are licensed under [MIT](https://github.com/JanSharp/jansharp.github.io/blob/main/LICENSE.txt). Don't worry though, MIT is a super small and very permissive license, you can read it in like 2 minutes. When it says "shall be included" it really does mean just that, you can license whatever you're using these files for however you want (which includes no license file, which is equivalent to all rights reserved, if I got the terms right.)
+- Do note that these files are licensed under [MIT](https://github.com/JanSharp/jansharp.github.io/blob/main/LICENSE.txt). Don't worry though, MIT is a super small and very permissive license, you can read it in like 2 minutes. When it says "shall be included" it really does mean just that - I like making a LICENSE_THIRD_PARTY.txt file [like this for example](https://github.com/JanSharp/phobos/blob/main/LICENSE_THIRD_PARTY.txt) - and you can license whatever you're using these files for however you want. I believe it's generally considered to be good faith if you also include a link to third party code, [like I'm doing here](https://github.com/JanSharp/phobos#libraries-dependencies-and-licenses), or on a credits page or something.
 
 The only file that _requires_ modification is the vcclisting.xhtml file, we'll get to that last.
 
@@ -86,12 +86,12 @@ The only file that requires modification is `vcclisting.xhtml`
 
 # Creating a new VPM Package
 
-<!-- cSpell:ignore jansharp, vrchat, udonsharp, autocrlf -->
+<!-- cSpell:ignore jansharp, vrchat, autocrlf -->
 
 - It would be a good idea to read this: https://vcc.docs.vrchat.com/vpm/packages
 - And this: https://docs.unity3d.com/2019.4/Documentation/Manual/CustomPackages.html (it's also linked in the above page, so this is just emphasis.)
 - Create a `com.user-name.package-name` folder in `Packages` in the unity project
-- Create a `package.json` file, you can use this as a template:
+- Create a `package.json` file, you can use this as a template (the vrc worlds dependency version here may be outdated):
 
 ```json
 {
@@ -107,7 +107,7 @@ The only file that requires modification is `vcclisting.xhtml`
   },
   "license": "MIT",
   "vpmDependencies": {
-    "com.vrchat.udonsharp": "^1.1.x"
+    "com.vrchat.worlds": "^3.4.x"
   },
   "url": "https://github.com/JanSharp/VCCDummyPackage/releases/download/v0.1.5/com.jansharp.dummy.zip",
   "changelogUrl": "https://github.com/JanSharp/VCCDummyPackage/blob/v0.1.5/CHANGELOG.md"
@@ -153,7 +153,7 @@ You can add a `.vpmignore` file at the root of the project to specify file globs
 - Run `vpm-publish publish`
   - If you'd like to be cautious, you can run `vpm-publish publish --validate-only` first, but the publish command itself runs validation first anyway
   - I'd recommend reading everything the publish command is doing so you, well, know what it's doing with your project, see here: [notes.md](notes.md)
-- Run `generate-vcc-listing` to generate an updated VCC listing locally
+- Run `vpm-publish generate-vcc-listing` to generate an updated VCC listing locally
 - Open a terminal in the folder containing the github gist for the listing
   - Note the use of `cd` to change directory when writing a script (or simply using a terminal in general)
 - Run `git add .`, `git commit -m "Update listing"` and `git push`
