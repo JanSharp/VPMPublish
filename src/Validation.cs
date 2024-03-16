@@ -55,6 +55,7 @@ namespace VPMPublish
 
             // Just use the generic error handling of RunProcess, as that will include the
             // error message produced by 'gh', which includes (minor, but good enough) instructions.
+            // TODO: even when authentication fails, this process returns code 0... which is just dumb
             Util.RunProcess("gh", "auth", "status", "--hostname", "github.com");
         }
 
