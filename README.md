@@ -175,7 +175,7 @@ You can add a `.vpmignore` file at the root of the project to specify file globs
   - I'd recommend reading everything the publish command is doing so you, well, know what it's doing with your project, see here: [notes.md](notes.md)
 - Run `vpm-publish generate-vcc-listing` to generate an updated VCC listing locally
 - Open a terminal in the folder containing the github gist for the listing
-  - Note the use of `cd` to change directory when writing a script (or simply using a terminal in general)
+    - Note that `cd` can be used to change directory when writing a script to automate this process (or simply using a terminal in general)
 - Run `git add .`, `git commit -m "Update listing"` and `git push`
 
 From `vpm-publish publish` onwards you can create a script (on Windows most commonly MSDos batch, on Linux/MacOs shell/bash) that runs all of those commands with the correct arguments already defined in sequence, allowing you to just sit back and relax while it (most likely very quickly) publishes your package.
