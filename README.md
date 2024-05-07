@@ -178,4 +178,4 @@ You can add a `.vpmignore` file at the root of the project to specify file globs
     - Note that `cd` can be used to change directory when writing a script to automate this process (or simply using a terminal in general)
 - Run `git add .`, `git commit -m "Update listing"` and `git push`
 
-From `vpm-publish publish` onwards you can create a script (on Windows most commonly MSDos batch, on Linux/MacOs shell/bash) that runs all of those commands with the correct arguments already defined in sequence, allowing you to just sit back and relax while it (most likely very quickly) publishes your package.
+From `vpm-publish publish` onwards you can create a script (on Linux/MacOs shell/bash, on Windows most commonly MSDos batch) that runs all of those commands with the correct arguments already defined in sequence, allowing you to just sit back and relax while it (most likely very quickly) publishes your package.
