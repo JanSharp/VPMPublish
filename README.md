@@ -156,6 +156,8 @@ You can add a `.vpmignore` file at the root of the project to specify file globs
 
 **Important:** Make sure to also exclude the `.meta` file for every excluded file. Chances are high that you'll just be duplicating lines and adding `.meta` to them.
 
+To double check if the `.vpmignore` file is doing what you want it to, use the `vpm-publish publish --list-url <...> --package-only` command (remember, `VPMPublish` on windows, if you've followed the installation steps).
+
 ## Notes for new projects
 
 - Do _not_ create a `CHANGELOG.md` file, it will be created when the first release happens.

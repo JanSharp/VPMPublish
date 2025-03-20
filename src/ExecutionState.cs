@@ -15,6 +15,7 @@ namespace VPMPublish
         private string mainBranch;
         private string? listingUrl;
         private bool validateOnly;
+        private bool packageOnly;
         private bool allowDirtyWorkingTree;
         ///<summary>
         ///Since time is passing during the execution of this program,
@@ -40,12 +41,14 @@ namespace VPMPublish
             string mainBranch,
             string? listingUrl = null,
             bool validateOnly = false,
+            bool packageOnly = false,
             bool allowDirtyWorkingTree = false)
         {
             this.packageRoot = packageRoot;
             this.mainBranch = mainBranch;
             this.listingUrl = listingUrl;
             this.validateOnly = validateOnly;
+            this.packageOnly = packageOnly;
             this.allowDirtyWorkingTree = allowDirtyWorkingTree;
             currentDateStr = DateTime.UtcNow.ToString("yyyy-MM-dd");
         }
@@ -55,6 +58,18 @@ namespace VPMPublish
             Util.SetChildProcessWorkingDirectory(packageRoot);
             try
             {
+                if (packageOnly)
+                {
+                    LoadPackageJson();
+                    Validation.ValidatePackageJson(packageRoot, packageJson!, out version);
+                    PrepareForPackage();
+                    AddAllFilesToTheZipPackage();
+                    CalculateSha256Checksum();
+                    Console.WriteLine($"Temp dir:       {tempDirName}");
+                    Console.WriteLine($"Package:        {packageFileName}");
+                    Console.WriteLine($"Package sha256: {sha256Checksum}");
+                    return 0;
+                }
                 Validation.EnsureCommandAvailability();
                 Validation.EnsureGitHubCLIIsAuthenticated();
                 Validation.EnsureIsMainBranch(mainBranch);
@@ -387,12 +402,14 @@ namespace VPMPublish
         private void CleanupPackage()
         {
             packageArchive?.Dispose();
+            if (packageOnly)
+                return;
             try
             {
                 DeleteTempDir();
             }
-            catch {} // Don't care about failure, the cleanup function is running in a 
-            // catch block already, so if this fails it's a secondary, non important error.
+            catch {} // Don't care about failure, the cleanup function is running in a
+            // finally block already, so if this fails it might just be a secondary, non important error.
         }
 
         private static Regex findFirstInsertLocationRegex = new Regex(

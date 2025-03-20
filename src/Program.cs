@@ -41,7 +41,14 @@ namespace VPMPublish
             );
             publishCommand.Add(validateOnlyOption);
 
-            publishCommand.SetHandler(Publish, packageRootOption, mainBranchNameOption, humanReadableListingUrlOption, validateOnlyOption);
+            var packageOnlyOption = new Option<bool>(
+                "--package-only",
+                "When set, first runs validation, then creates the package zip file in a temp dir and stops, "
+                    + "without creating a release nor modifying the repo.\n"
+            );
+            publishCommand.Add(packageOnlyOption);
+
+            publishCommand.SetHandler(Publish, packageRootOption, mainBranchNameOption, humanReadableListingUrlOption, validateOnlyOption, packageOnlyOption);
 
             var changelogDraftCommand = new Command("changelog-draft", "Generate a changelog draft for the current version.");
             rootCommand.AddCommand(changelogDraftCommand);
@@ -104,9 +111,9 @@ namespace VPMPublish
             return libExitCode != 0 ? libExitCode : exitCode;
         }
 
-        private static void Publish(string packageRoot, string mainBranch, string listingUrl, bool validateOnly)
+        private static void Publish(string packageRoot, string mainBranch, string listingUrl, bool validateOnly, bool packageOnly)
         {
-            var context = new ExecutionState(packageRoot, mainBranch, listingUrl, validateOnly);
+            var context = new ExecutionState(packageRoot, mainBranch, listingUrl, validateOnly, packageOnly);
             exitCode = context.Publish();
         }
 

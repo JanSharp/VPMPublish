@@ -99,7 +99,7 @@ namespace VPMPublish
             foreach (string tag in Util.RunProcess("git", "tag", "--list", "v*"))
             {
                 string versionStr = tag.Substring(1);
-                if (!SemVersion.TryParse(versionStr, SemVersionStyles.Strict, out SemVersion version))
+                if (!SemVersion.TryParse(versionStr, SemVersionStyles.Strict, out SemVersion? version))
                     continue;
 
                 string tagMessage = string.Join('\n', Util.RunProcess(
