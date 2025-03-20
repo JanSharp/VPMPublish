@@ -10,16 +10,16 @@ The generated vcc listing is just 2 json files, the listing json itself and a ti
 
 # Installing this program
 
-- Make sure you have dotnet 7 installed. Check by running the command `dotnet sdk check`, you need both the 7.x sdk and the runtime.
+- Make sure you have dotnet 8 installed. Check by running the command `dotnet sdk check`, you need both the 8.x sdk and the runtime.
 - Either `git clone` this project, see the clone button on github to get the right url, or download the source zip file and extract the files.
 - Once downloaded, open a command line/terminal in that folder and run `dotnet build`
 - "Install" the program so all you have to do is type `VPMPublish` in the command line/terminal to run it
   - If you are on Linux or MacOS
-    - Run `sudo ln -s $PWD/bin/Debug/net7.0/VPMPublish /usr/local/bin/vpm-publish`
+    - Run `sudo ln -s $PWD/bin/Debug/net8.0/VPMPublish /usr/local/bin/vpm-publish`
       - This creates a symbolic link called `vpm-publish` inside of a directory which is part of the PATH environment variable by default
       - If you'd like, you can use a different name than `vpm-publish`, like `VPMPublish` or anything else
   - If you are on Windows
-    - Navigate to `bin/Debug/net7.0` and copy the entire folder path
+    - Navigate to `bin/Debug/net8.0` and copy the entire folder path
     - Search for "environment" in windows search
     - Click on environment variables, or so
     - Edit the PATH variable, be it system or user doesn't matter, it's up to you
@@ -150,7 +150,7 @@ The following files are excluded by default (and cannot be included):
 - `.vpmignore`
 - `.git` (file or folder, it gets excluded entirely)
 
-You can add a `.vpmignore` file at the root of the project to specify file globs which should be excluded when creating a vpm package zip file. All specified globs are relative to the root of the package. Empty lines are ignored. Lines starting with `#` are ignored. You can only exclude, including files once they are excluded isn't possible. In general, the globs are very similar to those in `.gitignore`, however unfortunately I cannot tell you how exactly they work because the program is using the [Microsoft.Extensions.FileSystemGlobbing](https://www.nuget.org/packages/Microsoft.Extensions.FileSystemGlobbing/8.0.0-preview.6.23329.7) package, and the best documentation I found so far is this [here](https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.filesystemglobbing.matcher?view=dotnet-plat-ext-7.0#remarks). Also, unlike `.gitignore`, you can only have a `.vpmignore` file in the root of the project, not any additional ones in sub folders. And a keep variant also doesn't exist.
+You can add a `.vpmignore` file at the root of the project to specify file globs which should be excluded when creating a vpm package zip file. All specified globs are relative to the root of the package. Empty lines are ignored. Lines starting with `#` are ignored. You can only exclude, including files once they are excluded isn't possible. In general, the globs are very similar to those in `.gitignore`, however unfortunately I cannot tell you how exactly they work because the program is using the [Microsoft.Extensions.FileSystemGlobbing](https://www.nuget.org/packages/Microsoft.Extensions.FileSystemGlobbing/10.0.0-preview.2.25163.2) package, and the best documentation I found so far is this [here](https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.filesystemglobbing.matcher?view=dotnet-plat-ext-7.0#remarks). Also, unlike `.gitignore`, you can only have a `.vpmignore` file in the root of the project, not any additional ones in sub folders. And a keep variant also doesn't exist.
 
 **Important:** The globs are matching _files_, not directories. If you want to exclude all files in a directory, use `my/dir/**/*`.
 
