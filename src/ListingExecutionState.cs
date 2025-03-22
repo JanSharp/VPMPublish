@@ -202,11 +202,11 @@ namespace VPMPublish
             Util.Info($"Generating latest versions file at {outputFilename}");
 
             List<LatestVersionJson> latestList = packages
-                .Select(p => (package: p, versionInfo: p.versions.OrderByDescending(v => v.version).First()))
+                .Select(p => (package: p, versionInfo: p.versions.OrderByDescending(v => v.version, SemVersion.SortOrderComparer).First()))
                 // Sorting by version instead of name, that way the website has a presorted list.
                 // Since parsing and sorting the versions correctly in js would require a library,
                 // but we already have a library here so this is both more efficient and easier.
-                .OrderByDescending(v => v.versionInfo.version)
+                .OrderByDescending(v => v.versionInfo.version, SemVersion.SortOrderComparer)
                 .ThenBy(v => v.versionInfo.json.DisplayName)
                 .Select(v => {
                     ///cSpell:ignore creatordate
