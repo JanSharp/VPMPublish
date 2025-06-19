@@ -109,9 +109,11 @@ For example: `vcclisting.external.json`:
 <!-- cSpell:ignore jansharp, vrchat, autocrlf -->
 
 - It would be a good idea to read this: https://vcc.docs.vrchat.com/vpm/packages
-- And this: https://docs.unity3d.com/2019.4/Documentation/Manual/CustomPackages.html (it's also linked in the above page, so this is just emphasis.)
+- And this: https://docs.unity3d.com/2022.3/Documentation/Manual/CustomPackages.html (it's also linked in the above page, so this is just emphasis.)
 - Create a `com.user-name.package-name` folder in `Packages` in the unity project
 - Create a `package.json` file, you can use this as a template (the vrc worlds dependency version here may be outdated):
+
+<!-- TODO: mention "documentationUrl", add add support for it to the tool itself too - it should also increment the version of the documentation url when bumping all the other version numbers. -->
 
 ```json
 {
@@ -119,7 +121,7 @@ For example: `vcclisting.external.json`:
   "version": "0.1.5",
   "description": "A truly wonderful dummy package.",
   "displayName": "Dummy Package",
-  "unity": "2019.4",
+  "unity": "2022.3",
   "author": {
     "name": "JanSharp",
     "email": "foo@bar.com",
@@ -134,7 +136,7 @@ For example: `vcclisting.external.json`:
 }
 ```
 
-- Here's [Unity's fields in package.json](https://docs.unity3d.com/2019.4/Documentation/Manual/upm-manifestPkg.html) and here's [VRChat's additions](https://vcc.docs.vrchat.com/vpm/packages#vpm-manifest-additions) to the package.json.
+- Here's [Unity's fields in package.json](https://docs.unity3d.com/2022.3/Documentation/Manual/upm-manifestPkg.html) and here's [VRChat's additions](https://vcc.docs.vrchat.com/vpm/packages#vpm-manifest-additions) to the package.json.
 - Note that this vpm publish program ultimately formats the package.json whenever it publishes (to be exact, after it's published)
   - To prevent this from being annoying, there's the `vpm-publish normalize-package-json` command (remember, `VPMPublish` on windows, if you've followed the installation steps)
 - Make sure to `git init`
